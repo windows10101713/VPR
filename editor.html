@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VPR | Editor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="editor">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <a class="brand brand-link" href="index.html">
+            <div class="brand-mark">V</div>
+            <div>
+              <p class="eyebrow">Virtual Program Runner</p>
+              <h1>VPR</h1>
+            </div>
+          </a>
+          <nav class="menu">
+            <a class="menu-item" href="index.html"><span>홈</span><small>Home</small></a>
+            <a class="menu-item is-active" href="editor.html"><span>에디터</span><small>Editor</small></a>
+            <a class="menu-item" href="assistant.html"><span>AI 도우미</span><small>Assistant</small></a>
+            <a class="menu-item" href="errors.html"><span>에러 해결</span><small>Error Fix</small></a>
+            <a class="menu-item" href="community.html"><span>공유</span><small>Community</small></a>
+          </nav>
+        </div>
+        <div class="sidebar-card">
+          <p class="eyebrow">에디터 안내</p>
+          <h2>프로젝트별로 저장</h2>
+          <p>작성 중인 코드는 브라우저 로컬 저장소에 프로젝트 단위로 보관됩니다.</p>
+        </div>
+      </aside>
+
+      <main class="main-content page-stack">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Notebook-style editor</p>
+            <h2 id="page-title">코드를 작성하고 바로 실행해 보기</h2>
+          </div>
+          <div class="topbar-actions">
+            <label class="language-switch" for="localeSelect">
+              <span>언어</span>
+              <select id="localeSelect">
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <span class="run-mode-pill" id="runModePill">Cloud Runtime</span>
+            <a class="ghost-button" href="community.html">예제 가져오기</a>
+          </div>
+        </header>
+
+        <section class="page-intro">
+          <div>
+            <p class="eyebrow">Editor Workspace</p>
+            <h3>언어 선택, 저장, 실행, 미리보기를 한 화면에서</h3>
+          </div>
+          <p>에디터 페이지에는 실제 작업에 필요한 기능만 남겨 집중도를 높였습니다.</p>
+        </section>
+
+        <section class="workspace editor-page-layout">
+          <div class="window-frame">
+            <div class="window-bar">
+              <div class="window-dots"><span></span><span></span><span></span></div>
+              <div class="window-actions">
+                <button class="window-action" type="button">파일</button>
+                <button class="window-action" type="button">편집</button>
+                <button class="window-action" type="button">실행</button>
+                <button class="window-action" type="button">도움말</button>
+              </div>
+            </div>
+
+            <div class="editor-toolbar">
+              <label class="project-name-field">
+                프로젝트
+                <input id="projectName" type="text" value="my-first-project" maxlength="40" />
+              </label>
+              <label>
+                언어
+                <select id="languageSelect"></select>
+              </label>
+              <label>
+                테마
+                <select>
+                  <option>Classic Note</option>
+                  <option>Ocean Lab</option>
+                  <option>Paper Dark</option>
+                </select>
+              </label>
+              <button class="ghost-button small" id="newProjectButton" type="button">새 초안</button>
+              <button class="primary-button small" id="runButton" type="button">실행</button>
+              <button class="ghost-button small" id="saveButton" type="button">저장</button>
+              <button class="ghost-button small" id="downloadButton" type="button">내보내기</button>
+              <label class="ghost-button small file-trigger" for="importFileInput">가져오기</label>
+              <input id="importFileInput" type="file" accept=".txt,.js,.py,.cpp,.html,.json" hidden />
+            </div>
+
+            <div class="editor-layout">
+              <div class="line-numbers" id="lineNumbers"></div>
+              <textarea id="codeEditor" spellcheck="false"></textarea>
+            </div>
+          </div>
+
+          <div class="output-panel">
+            <div class="output-header">
+              <h3>실행 결과</h3>
+              <span id="statusBadge">준비됨</span>
+            </div>
+            <div class="meta-strip">
+              <div>
+                <strong>최근 저장</strong>
+                <span id="saveMeta">아직 저장된 프로젝트가 없습니다.</span>
+              </div>
+              <div>
+                <strong>저장된 프로젝트</strong>
+                <span id="projectCount">0개</span>
+              </div>
+            </div>
+            <div class="project-library">
+              <div class="section-label">내 프로젝트</div>
+              <ul class="project-list" id="projectList"></ul>
+            </div>
+            <div class="runtime-config-panel">
+              <div class="runtime-config-head">
+                <div class="section-label">런타임 설정</div>
+                <button class="ghost-button small" id="toggleRuntimeConfigButton" type="button">설정 열기</button>
+              </div>
+              <div class="runtime-config-body is-hidden" id="runtimeConfigBody">
+                <label>
+                  Endpoint
+                  <input id="runtimeEndpointInput" type="text" placeholder="https://your-runtime/api/v2/piston/execute" />
+                </label>
+                <label>
+                  Headers(JSON)
+                  <textarea id="runtimeHeadersInput" rows="4" spellcheck="false" placeholder='{"Authorization":"Bearer token"}'></textarea>
+                </label>
+                <div class="runtime-config-actions">
+                  <button class="primary-button small" id="saveRuntimeConfigButton" type="button">저장</button>
+                  <button class="ghost-button small" id="resetRuntimeConfigButton" type="button">기본값</button>
+                </div>
+                <p class="runtime-config-status" id="runtimeConfigStatus">현재 기본 공개 런타임 엔드포인트를 사용 중입니다.</p>
+              </div>
+            </div>
+            <pre id="outputConsole"></pre>
+            <div class="preview-panel">
+              <div class="section-label">미리보기</div>
+              <iframe id="previewFrame" title="VPR Preview" sandbox="allow-scripts"></iframe>
+            </div>
+            <div class="preview-panel">
+              <div class="section-label">회로도</div>
+              <div id="circuitEditor" class="circuit-editor is-disabled">
+                <div class="circuit-toolbar">
+                  <button class="ghost-button small" id="addComponentButton" type="button">부품 추가</button>
+                  <button class="ghost-button small" id="connectComponentButton" type="button">연결 생성</button>
+                  <button class="ghost-button small" id="resetCircuitButton" type="button">초기 배치</button>
+                </div>
+                <div class="circuit-workspace" id="circuitWorkspace">
+                  <svg id="circuitWireLayer" class="circuit-wire-layer"></svg>
+                  <div id="circuitNodeLayer" class="circuit-node-layer"></div>
+                  <div id="circuitDisabledOverlay" class="circuit-disabled-overlay">Arduino/ESP-IDF를 선택하면 회로 편집기가 활성화됩니다.</div>
+                </div>
+                <div class="circuit-form">
+                  <label>
+                    이름
+                    <input id="circuitNameInput" type="text" maxlength="24" placeholder="component name" />
+                  </label>
+                  <label>
+                    핀/설명
+                    <input id="circuitPinInput" type="text" maxlength="24" placeholder="D13 / GPIO2" />
+                  </label>
+                  <label>
+                    X
+                    <input id="circuitXInput" type="number" min="0" max="900" />
+                  </label>
+                  <label>
+                    Y
+                    <input id="circuitYInput" type="number" min="0" max="700" />
+                  </label>
+                  <button class="primary-button small" id="applyCircuitNodeButton" type="button">수정 적용</button>
+                  <button class="ghost-button small" id="deleteCircuitNodeButton" type="button">선택 삭제</button>
+                </div>
+                <p id="circuitStatus" class="circuit-status">회로도를 수정하려면 부품을 선택하세요.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

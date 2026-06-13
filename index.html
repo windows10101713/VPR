@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VPR | Home</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="home">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <a class="brand brand-link" href="index.html">
+            <div class="brand-mark">V</div>
+            <div>
+              <p class="eyebrow">Virtual Program Runner</p>
+              <h1>VPR</h1>
+            </div>
+          </a>
+
+          <nav class="menu">
+            <a class="menu-item is-active" href="index.html"><span>홈</span><small>Home</small></a>
+            <a class="menu-item" href="editor.html"><span>에디터</span><small>Editor</small></a>
+            <a class="menu-item" href="assistant.html"><span>AI 도우미</span><small>Assistant</small></a>
+            <a class="menu-item" href="errors.html"><span>에러 해결</span><small>Error Fix</small></a>
+            <a class="menu-item" href="community.html"><span>공유</span><small>Community</small></a>
+          </nav>
+        </div>
+
+        <div class="sidebar-card">
+          <p class="eyebrow">빠른 시작</p>
+          <h2>설치 없이 바로 코딩</h2>
+          <p>기능을 페이지별로 나눠 처음 보는 사용자도 길을 잃지 않게 구성했습니다.</p>
+        </div>
+      </aside>
+
+      <main class="main-content page-stack">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Education-first coding workspace</p>
+            <h2 id="page-title">쉽고 빠른 프로그래밍 시작</h2>
+          </div>
+
+          <div class="topbar-actions">
+            <label class="language-switch" for="localeSelect">
+              <span>언어</span>
+              <select id="localeSelect">
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <a class="ghost-button" href="community.html">예제 보기</a>
+            <a class="primary-button" href="editor.html">코딩 시작</a>
+          </div>
+        </header>
+
+        <section class="hero">
+          <div class="hero-copy">
+            <p class="eyebrow">초보자를 위한 온라인 컴파일 학습 환경</p>
+            <h3>기능을 한눈에 보고, 필요한 페이지로 바로 이동</h3>
+            <p>
+              VPR은 홈, 에디터, AI 보조, 에러 해결, 커뮤니티를 각각 분리해 처음 접하는 사용자도
+              화면을 덜 복잡하게 느끼도록 설계했습니다.
+            </p>
+
+            <div class="hero-actions">
+              <a class="primary-button" href="editor.html">에디터 열기</a>
+              <a class="secondary-button" href="assistant.html">AI 아이디어 보기</a>
+            </div>
+          </div>
+
+          <div class="hero-grid">
+            <article class="stat-card accent-a">
+              <p>즉시 실행</p>
+              <strong>언어별 학습 흐름</strong>
+              <span>코드 작성, 저장, 미리보기, 예제 로딩을 분리된 페이지에서 사용</span>
+            </article>
+            <article class="stat-card accent-b">
+              <p>학습 보조</p>
+              <strong>AI와 에러 가이드</strong>
+              <span>아이디어 생성과 오류 해설을 별도 화면으로 분리</span>
+            </article>
+            <article class="stat-card accent-c">
+              <p>커뮤니티</p>
+              <strong>예제에서 에디터로 이동</strong>
+              <span>공개 스니펫을 선택하면 에디터로 바로 이어짐</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="dashboard-grid">
+          <article class="feature-card">
+            <p class="eyebrow">페이지 구성</p>
+            <h3>기능별 분리 구조</h3>
+            <div class="response-box compact-box">
+              <strong>Home</strong>
+              <p>전체 구조와 최근 프로젝트 현황 확인</p>
+              <strong>Editor</strong>
+              <p>코드 작성, 저장, 실행, 미리보기, 가져오기/내보내기</p>
+              <strong>Assistant / Errors / Community</strong>
+              <p>학습 보조, 오류 해설, 예제 탐색을 각 페이지에서 집중</p>
+            </div>
+          </article>
+
+          <article class="feature-card">
+            <p class="eyebrow">최근 작업</p>
+            <h3>내 프로젝트 현황</h3>
+            <div class="response-box compact-box" id="homeProjectSummary"></div>
+          </article>
+        </section>
+
+        <section class="quick-link-grid">
+          <a class="feature-card card-link" href="editor.html">
+            <p class="eyebrow">Editor</p>
+            <h3>코드를 쓰고 저장</h3>
+            <p>JavaScript 실행, HTML 미리보기, 로컬 프로젝트 라이브러리</p>
+          </a>
+          <a class="feature-card card-link" href="assistant.html">
+            <p class="eyebrow">Assistant</p>
+            <h3>아이디어와 학습 포인트</h3>
+            <p>언어별 학습 포인트와 프로젝트 주제 추천</p>
+          </a>
+          <a class="feature-card card-link" href="errors.html">
+            <p class="eyebrow">Errors</p>
+            <h3>오류 메시지 해설</h3>
+            <p>문법, null/undefined, 인덱스 오류 같은 대표 패턴 가이드</p>
+          </a>
+          <a class="feature-card card-link" href="community.html">
+            <p class="eyebrow">Community</p>
+            <h3>예제에서 바로 시작</h3>
+            <p>공개 스니펫을 고르고 에디터로 넘겨서 바로 수정</p>
+          </a>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

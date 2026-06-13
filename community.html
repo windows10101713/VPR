@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VPR | Community</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body data-page="community">
+    <div class="app-shell">
+      <aside class="sidebar">
+        <div>
+          <a class="brand brand-link" href="index.html">
+            <div class="brand-mark">V</div>
+            <div>
+              <p class="eyebrow">Virtual Program Runner</p>
+              <h1>VPR</h1>
+            </div>
+          </a>
+          <nav class="menu">
+            <a class="menu-item" href="index.html"><span>홈</span><small>Home</small></a>
+            <a class="menu-item" href="editor.html"><span>에디터</span><small>Editor</small></a>
+            <a class="menu-item" href="assistant.html"><span>AI 도우미</span><small>Assistant</small></a>
+            <a class="menu-item" href="errors.html"><span>에러 해결</span><small>Error Fix</small></a>
+            <a class="menu-item is-active" href="community.html"><span>공유</span><small>Community</small></a>
+          </nav>
+        </div>
+        <div class="sidebar-card">
+          <p class="eyebrow">커뮤니티</p>
+          <h2>예제를 고르고 시작</h2>
+          <p>공개 스니펫을 둘러보고 원하는 예제를 에디터로 바로 이어서 수정할 수 있습니다.</p>
+        </div>
+      </aside>
+
+      <main class="main-content page-stack">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Community Snippets</p>
+            <h2 id="page-title">인기 예제 코드를 살펴보고 에디터로 보내기</h2>
+          </div>
+          <div class="topbar-actions">
+            <label class="language-switch" for="localeSelect">
+              <span>언어</span>
+              <select id="localeSelect">
+                <option value="ko">한국어</option>
+                <option value="en">English</option>
+              </select>
+            </label>
+            <a class="primary-button" href="editor.html">빈 에디터 열기</a>
+          </div>
+        </header>
+
+        <section class="page-intro">
+          <div>
+            <p class="eyebrow">Snippet Gallery</p>
+            <h3>예제를 선택하면 에디터 페이지에서 이어서 작업</h3>
+          </div>
+          <p>한 화면에 모든 기능을 몰아넣는 대신, 탐색은 여기서 하고 실제 편집은 에디터에서 진행합니다.</p>
+        </section>
+
+        <section class="feature-grid">
+          <article class="feature-card">
+            <p class="eyebrow">예제 코드</p>
+            <h3>인기 공개 스니펫</h3>
+            <ul class="snippet-list" id="snippetList"></ul>
+          </article>
+
+          <article class="feature-card">
+            <p class="eyebrow">업로드</p>
+            <h3>내 코드 공개</h3>
+            <div class="upload-box">
+              <p id="publishStatus">로그인 후 프로젝트를 선택해 공개할 수 있습니다.</p>
+              <label>
+                프로젝트
+                <select id="publishProjectSelect" class="full-width-select"></select>
+              </label>
+              <textarea id="publishDescription" placeholder="예제 설명을 입력하세요."></textarea>
+              <button class="primary-button small" id="publishButton" type="button">공개하기</button>
+            </div>
+          </article>
+        </section>
+
+        <section class="feature-grid single-column-grid">
+          <article class="feature-card wide">
+            <p class="eyebrow">공개 피드</p>
+            <h3>다른 사용자 공개 코드</h3>
+            <ul class="snippet-list" id="publicSnippetList"></ul>
+          </article>
+        </section>
+      </main>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
