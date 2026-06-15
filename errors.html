@@ -68,7 +68,19 @@
           <article class="feature-card wide">
             <p class="eyebrow">에러 진단</p>
             <h3>오류 메시지 붙여넣기</h3>
+            <label>
+              언어
+              <select id="errorLanguageSelect"></select>
+            </label>
+            <label>
+              파일명
+              <input id="errorFileInput" type="text" placeholder="예: src/main.py" />
+            </label>
             <textarea id="errorInput" placeholder="예: SyntaxError: invalid syntax"></textarea>
+            <label>
+              관련 코드 (선택)
+              <textarea id="errorCodeInput" placeholder="에러가 난 코드 일부를 붙여넣으면 라인 기준 수정 제안이 더 정확해집니다."></textarea>
+            </label>
             <button class="primary-button small" id="errorButton" type="button">해결 방법 보기</button>
             <div class="response-box" id="errorResponse"></div>
           </article>

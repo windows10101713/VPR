@@ -164,6 +164,32 @@ textarea {
   flex-wrap: wrap;
 }
 
+.sidebar-toggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.home-persona-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.persona-chip {
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(15, 118, 110, 0.18);
+  background: rgba(240, 253, 250, 0.8);
+}
+
 .auth-inline {
   display: flex;
   align-items: center;
@@ -248,6 +274,12 @@ input {
 
 .small {
   padding: 10px 14px;
+}
+
+.button-row {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
 }
 
 .ghost-button:hover,
@@ -559,6 +591,49 @@ input {
   font-size: 0.9rem;
 }
 
+.terminal-panel {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.78);
+  border: 1px solid rgba(74, 58, 37, 0.08);
+}
+
+#terminalConsole {
+  min-height: 130px;
+  max-height: 220px;
+  margin: 0 0 10px;
+  padding: 12px;
+  overflow: auto;
+  background: #0f172a;
+  color: #c7f9cc;
+  border-radius: 12px;
+  font-family: Consolas, monospace;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+
+.terminal-input-row {
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr auto auto;
+}
+
+.terminal-input-row input {
+  min-width: 0;
+}
+
+.gui-hint-panel {
+  margin: 0;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed rgba(29, 78, 216, 0.4);
+  background: rgba(239, 246, 255, 0.72);
+  color: #334155;
+  line-height: 1.55;
+}
+
 .project-list {
   display: grid;
   gap: 10px;
@@ -703,6 +778,10 @@ input {
   flex-wrap: wrap;
 }
 
+.circuit-toolbar select {
+  min-width: 120px;
+}
+
 .circuit-workspace {
   position: relative;
   min-height: 260px;
@@ -721,7 +800,16 @@ input {
   inset: 0;
   width: 100%;
   height: 100%;
-  pointer-events: none;
+  pointer-events: auto;
+}
+
+.circuit-wire {
+  cursor: pointer;
+}
+
+.circuit-wire.is-selected {
+  stroke: #dc2626;
+  stroke-width: 4;
 }
 
 .circuit-node-layer {
@@ -732,13 +820,18 @@ input {
 .circuit-node {
   position: absolute;
   width: 132px;
-  padding: 8px 10px;
+  height: 48px;
+  padding: 0;
   border-radius: 12px;
   border: 1px solid rgba(15, 118, 110, 0.32);
-  background: rgba(240, 253, 250, 0.95);
+  background: transparent;
   box-shadow: 0 10px 18px rgba(15, 118, 110, 0.12);
   cursor: grab;
   user-select: none;
+  transform: translateZ(0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .circuit-node.is-selected {
@@ -746,17 +839,63 @@ input {
   box-shadow: 0 0 0 2px rgba(217, 119, 6, 0.24);
 }
 
+.circuit-node.sensor {
+}
+
+.circuit-node.led {
+}
+
+.circuit-node.resistor {
+}
+
+.circuit-node.button {
+}
+
+.circuit-node.module {
+}
+
+.circuit-component-svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.circuit-node-label {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink-base);
+  pointer-events: none;
+  z-index: 10;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  padding: 4px;
+}
+
 .circuit-node-name {
   display: block;
   font-weight: 700;
-  font-size: 0.86rem;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
 }
 
 .circuit-node-pin {
   display: block;
-  margin-top: 2px;
+  margin-top: 1px;
   color: var(--ink-soft);
-  font-size: 0.8rem;
+  font-size: 0.65rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
 }
 
 .circuit-disabled-overlay {
@@ -801,6 +940,10 @@ input {
 @media (max-width: 720px) {
   .circuit-form {
     grid-template-columns: 1fr 1fr;
+  }
+
+  .terminal-input-row {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -901,9 +1044,39 @@ input {
     border-right: none;
     border-bottom: 1px solid var(--line);
   }
+
+  .home-persona-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 720px) {
+  .app-shell {
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: min(82vw, 320px);
+    z-index: 30;
+    transform: translateX(-102%);
+    transition: transform 220ms ease;
+    border-bottom: none;
+    border-right: 1px solid var(--line);
+  }
+
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
+  }
+
   .main-content,
   .sidebar {
     padding: 20px;

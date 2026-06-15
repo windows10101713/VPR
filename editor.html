@@ -145,20 +145,45 @@
                   <button class="primary-button small" id="saveRuntimeConfigButton" type="button">저장</button>
                   <button class="ghost-button small" id="resetRuntimeConfigButton" type="button">기본값</button>
                 </div>
-                <p class="runtime-config-status" id="runtimeConfigStatus">현재 기본 공개 런타임 엔드포인트를 사용 중입니다.</p>
+                <p class="runtime-config-status" id="runtimeConfigStatus">기본 로컬 런타임(localhost)을 사용 중입니다.</p>
               </div>
             </div>
             <pre id="outputConsole"></pre>
+            <div class="terminal-panel">
+              <div class="section-label">터미널</div>
+              <pre id="terminalConsole">vpr-terminal ready
+type: help</pre>
+              <div class="terminal-input-row">
+                <input id="terminalInput" type="text" placeholder="예: pip install requests / ls / runtimes / clear" />
+                <button class="primary-button small" id="terminalRunButton" type="button">실행</button>
+                <button class="ghost-button small" id="terminalClearButton" type="button">지우기</button>
+              </div>
+            </div>
             <div class="preview-panel">
               <div class="section-label">미리보기</div>
               <iframe id="previewFrame" title="VPR Preview" sandbox="allow-scripts"></iframe>
             </div>
             <div class="preview-panel">
+              <div class="section-label">GUI 코드 힌트</div>
+              <div id="guiHintPanel" class="gui-hint-panel">
+                Python GUI 라이브러리(pygame/tkinter/pyqt 등)는 브라우저에서 네이티브 창으로 바로 열 수 없습니다.
+                대신 웹 렌더링 가능한 코드(HTML/Canvas) 또는 pygbag/pyscript 경로를 안내합니다.
+              </div>
+            </div>
+            <div class="preview-panel">
               <div class="section-label">회로도</div>
               <div id="circuitEditor" class="circuit-editor is-disabled">
                 <div class="circuit-toolbar">
+                  <select id="circuitComponentType">
+                    <option value="sensor">Sensor</option>
+                    <option value="led">LED</option>
+                    <option value="resistor">Resistor</option>
+                    <option value="button">Button</option>
+                    <option value="module">Module</option>
+                  </select>
                   <button class="ghost-button small" id="addComponentButton" type="button">부품 추가</button>
-                  <button class="ghost-button small" id="connectComponentButton" type="button">연결 생성</button>
+                  <button class="ghost-button small" id="connectComponentButton" type="button">와이어 모드</button>
+                  <button class="ghost-button small" id="removeWireButton" type="button">와이어 삭제</button>
                   <button class="ghost-button small" id="resetCircuitButton" type="button">초기 배치</button>
                 </div>
                 <div class="circuit-workspace" id="circuitWorkspace">

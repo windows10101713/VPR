@@ -64,6 +64,38 @@
           <p>입문자는 코딩 전 단계에서 막히는 일이 많기 때문에 아이디어 탐색과 학습 가이드를 분리했습니다.</p>
         </section>
 
+        <section class="feature-grid">
+          <article class="feature-card">
+            <p class="eyebrow">Free AI Gateway</p>
+            <h3>무료 AI 모델 연결 설정</h3>
+            <label>
+              제공자
+              <select id="aiProviderSelect" class="full-width-select">
+                <option value="ollama">Ollama (로컬 무료)</option>
+                <option value="huggingface">Hugging Face Inference (무료 플랜)</option>
+                <option value="openrouter">OpenRouter Free Models</option>
+              </select>
+            </label>
+            <label>
+              Endpoint
+              <input id="aiEndpointInput" type="text" placeholder="예: http://localhost:11434" />
+            </label>
+            <label>
+              Model
+              <input id="aiModelInput" type="text" placeholder="예: qwen2.5:3b / google/gemma-2-2b-it" />
+            </label>
+            <label>
+              API Key (선택)
+              <input id="aiApiKeyInput" type="password" placeholder="필요한 제공자만 입력" />
+            </label>
+            <div class="button-row">
+              <button class="secondary-button small" id="aiTestButton" type="button">연결 테스트</button>
+              <button class="primary-button small" id="aiSaveButton" type="button">설정 저장</button>
+            </div>
+            <div class="response-box" id="aiConfigStatus"></div>
+          </article>
+        </section>
+
         <section class="feature-grid assistant-layout">
           <article class="feature-card">
             <p class="eyebrow">AI 아이디어 생성</p>
@@ -81,6 +113,29 @@
               <select id="assistantLanguageSelect" class="full-width-select"></select>
             </label>
             <div class="response-box learning-box" id="learningGuide"></div>
+          </article>
+        </section>
+
+        <section class="feature-grid">
+          <article class="feature-card">
+            <p class="eyebrow">AI 코드 코치</p>
+            <h3>코드 개선 제안</h3>
+            <label>
+              언어
+              <select id="coachLanguageSelect" class="full-width-select"></select>
+            </label>
+            <textarea id="coachCodeInput" placeholder="개선받을 코드를 붙여넣으세요"></textarea>
+            <input id="coachGoalInput" type="text" placeholder="목표 예: 속도 개선, 가독성 향상, 버그 줄이기" />
+            <button class="primary-button small" id="coachButton" type="button">AI 개선안 생성</button>
+            <div class="response-box" id="coachResponse"></div>
+          </article>
+
+          <article class="feature-card">
+            <p class="eyebrow">AI 설계 플래너</p>
+            <h3>구현 단계 추천</h3>
+            <textarea id="plannerPrompt" placeholder="예: 사용자 로그인 + 게시글 CRUD + 검색 기능을 만들고 싶어요"></textarea>
+            <button class="secondary-button small" id="plannerButton" type="button">단계별 계획 받기</button>
+            <div class="response-box" id="plannerResponse"></div>
           </article>
         </section>
       </main>

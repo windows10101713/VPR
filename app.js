@@ -41,7 +41,30 @@ const publicSnippetsKey = "vpr-public-snippets";
 const runThrottleKey = "vpr-last-run-ts";
 const runtimeConfigKey = "vpr-runtime-config";
 const circuitStateKey = "vpr-circuit-state";
-const defaultRuntimeEndpoint = "https://emkc.org/api/v2/piston/execute";
+const aiConfigKey = "vpr-ai-config";
+const defaultRuntimeEndpoint = "http://localhost:3000/api/v2/piston/execute";
+const defaultAiProxyEndpoint = "http://localhost:3000/api/ai/chat";
+
+const aiProviderPresets = {
+  ollama: {
+    provider: "ollama",
+    endpoint: "http://localhost:11434",
+    model: "qwen2.5:3b",
+    apiKey: "",
+  },
+  huggingface: {
+    provider: "huggingface",
+    endpoint: "https://api-inference.huggingface.co/models",
+    model: "google/gemma-2-2b-it",
+    apiKey: "",
+  },
+  openrouter: {
+    provider: "openrouter",
+    endpoint: "https://openrouter.ai/api/v1/chat/completions",
+    model: "mistralai/mistral-7b-instruct:free",
+    apiKey: "",
+  },
+};
 
 const languageSamples = {
   javascript: {
@@ -104,20 +127,6 @@ const languageSamples = {
     guide: ["error 반환값을 무시하지 마세요.", "패키지 구조를 단순하게 유지하세요."],
     code: "package main\n\nimport \"fmt\"\n\nfunc main() {\n  fmt.Println(\"Hello from Go\")\n}",
   },
-  rust: {
-    label: "Rust",
-    extension: "rs",
-    runner: { language: "rust", version: "1.68.2" },
-    guide: ["소유권 에러를 타입 설계 문제로 보세요.", "panic보다 Result 기반 처리로 확장성을 확보하세요."],
-    code: "fn main() {\n    println!(\"Hello from Rust\");\n}",
-  },
-  php: {
-    label: "PHP",
-    extension: "php",
-    runner: { language: "php", version: "8.2.3" },
-    guide: ["입력값은 필터링 후 사용하세요.", "예외 기반 오류 처리 규칙을 통일하세요."],
-    code: "<?php\necho \"Hello from PHP\\n\";\n",
-  },
   ruby: {
     label: "Ruby",
     extension: "rb",
@@ -125,19 +134,26 @@ const languageSamples = {
     guide: ["메서드 책임을 작게 유지하세요.", "동적 타입이라도 입력 검증은 필수입니다."],
     code: "puts 'Hello from Ruby'",
   },
-  kotlin: {
-    label: "Kotlin",
-    extension: "kt",
-    runner: { language: "kotlin", version: "1.8.20" },
-    guide: ["null-safe 연산자를 적극 활용하세요.", "데이터 클래스와 확장 함수를 과도하게 남용하지 마세요."],
-    code: "fun main() {\n  println(\"Hello from Kotlin\")\n}",
+  sql: {
+    label: "SQL",
+    extension: "sql",
+    runner: { language: "sql", version: "3.40.0" },
+    guide: ["SELECT 전에 테이블 구조를 먼저 설계하세요.", "WHERE 조건 없는 UPDATE/DELETE는 위험합니다."],
+    code: "SELECT 'Hello from SQL' AS greeting;\nSELECT 3 + 7 AS result;",
   },
-  swift: {
-    label: "Swift",
-    extension: "swift",
-    runner: { language: "swift", version: "5.3.3" },
-    guide: ["옵셔널 언래핑 경로를 명확히 하세요.", "값 타입/참조 타입 선택 이유를 분명히 하세요."],
-    code: "print(\"Hello from Swift\")",
+  powershell: {
+    label: "PowerShell",
+    extension: "ps1",
+    runner: { language: "powershell", version: "7.3.0" },
+    guide: ["파이프라인(|)으로 커맨드를 연결하세요.", "오류 처리에 try/catch를 사용하세요."],
+    code: "Write-Output 'Hello from PowerShell'\nWrite-Output (3 + 7)",
+  },
+  bash: {
+    label: "Bash",
+    extension: "sh",
+    runner: { language: "bash", version: "5.2.0" },
+    guide: ["변수에 공백 없이 대입하세요 (a=1).", "문자열 비교는 == 대신 = 또는 [[ ]] 사용을 권장합니다."],
+    code: "#!/bin/bash\necho \"Hello from Bash\"\necho $((3 + 7))",
   },
   html: {
     label: "HTML",
@@ -145,6 +161,13 @@ const languageSamples = {
     mode: "preview",
     guide: ["시맨틱 태그를 우선 사용하세요.", "스타일/동작 분리를 유지하세요."],
     code: "<!DOCTYPE html>\n<html lang=\"ko\">\n  <body>\n    <h1>Hello from HTML</h1>\n    <p>Preview works in the panel.</p>\n  </body>\n</html>",
+  },
+  css: {
+    label: "CSS",
+    extension: "css",
+    mode: "preview",
+    guide: ["컴포넌트 단위 클래스로 스타일 범위를 관리하세요.", "간격/색상은 변수로 관리하면 유지보수가 쉬워집니다."],
+    code: ":root {\n  --bg: #f2efe9;\n  --ink: #1f2a37;\n  --accent: #d97706;\n}\n\nbody {\n  margin: 0;\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  font-family: 'Segoe UI', sans-serif;\n  background: radial-gradient(circle at top, #fff, var(--bg));\n}\n\n.card {\n  width: min(420px, 90vw);\n  padding: 24px;\n  border-radius: 20px;\n  background: #fff;\n  box-shadow: 0 12px 30px rgba(31, 42, 55, 0.16);\n}\n\n.title {\n  margin: 0 0 8px;\n  color: var(--ink);\n}\n\n.badge {\n  display: inline-block;\n  margin-top: 12px;\n  padding: 6px 10px;\n  border-radius: 999px;\n  background: var(--accent);\n  color: #fff;\n  font-size: 12px;\n}\n",
   },
   arduino: {
     label: "Arduino",
@@ -429,6 +452,179 @@ function setRuntimeConfig(config) {
   localStorage.setItem(runtimeConfigKey, JSON.stringify(config));
 }
 
+function getAiConfig() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(aiConfigKey) || "{}");
+    const provider = Object.prototype.hasOwnProperty.call(aiProviderPresets, parsed.provider) ? parsed.provider : "ollama";
+    const preset = aiProviderPresets[provider];
+    return {
+      provider,
+      endpoint: String(parsed.endpoint || preset.endpoint || "").trim(),
+      model: String(parsed.model || preset.model || "").trim(),
+      apiKey: String(parsed.apiKey || "").trim(),
+    };
+  } catch {
+    return { ...aiProviderPresets.ollama };
+  }
+}
+
+function setAiConfig(config) {
+  localStorage.setItem(aiConfigKey, JSON.stringify(config));
+}
+
+function buildAiPrompt(task, params) {
+  if (task === "idea") {
+    return [
+      "You are a practical coding mentor for beginners.",
+      "Generate concrete project ideas with short steps.",
+      "Keep answer concise and structured.",
+      `User request: ${params.prompt}`,
+    ].join("\n");
+  }
+
+  if (task === "coach") {
+    return [
+      "You are a senior code reviewer.",
+      "Return: 1) issues, 2) improved code, 3) why this is better.",
+      "Be specific and action-oriented.",
+      `Language: ${params.language}`,
+      `Goal: ${params.goal || "general improvement"}`,
+      "Code:",
+      params.code,
+    ].join("\n");
+  }
+
+  return [
+    "You are a software architect assistant.",
+    "Break request into phased implementation steps.",
+    "Include MVP scope, data model, API/UI tasks, testing checklist.",
+    `Request: ${params.prompt}`,
+  ].join("\n");
+}
+
+async function callOllama(config, prompt) {
+  const response = await fetch(`${config.endpoint.replace(/\/$/, "")}/api/chat`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [{ role: "user", content: prompt }],
+      stream: false,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || `Ollama request failed (${response.status})`);
+  }
+
+  const text = data.message?.content || "";
+  if (!text.trim()) {
+    throw new Error("Ollama returned empty response");
+  }
+  return text;
+}
+
+async function callHuggingFace(config, prompt) {
+  const modelEndpoint = `${config.endpoint.replace(/\/$/, "")}/${encodeURIComponent(config.model)}`;
+  const headers = { "Content-Type": "application/json" };
+  if (config.apiKey) {
+    headers.Authorization = `Bearer ${config.apiKey}`;
+  }
+
+  const response = await fetch(modelEndpoint, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      inputs: prompt,
+      parameters: { max_new_tokens: 700, return_full_text: false, temperature: 0.4 },
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = data.error || data.message || `Hugging Face request failed (${response.status})`;
+    throw new Error(detail);
+  }
+
+  if (Array.isArray(data) && data[0]?.generated_text) {
+    return String(data[0].generated_text);
+  }
+  if (typeof data.generated_text === "string") {
+    return data.generated_text;
+  }
+  throw new Error("Hugging Face response format was unexpected");
+}
+
+async function callOpenRouter(config, prompt) {
+  if (!config.apiKey) {
+    throw new Error("OpenRouter requires API key");
+  }
+
+  const response = await fetch(config.endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${config.apiKey}`,
+      "HTTP-Referer": window.location.origin,
+      "X-Title": "VPR Assistant",
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.4,
+      max_tokens: 700,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const detail = data.error?.message || data.message || `OpenRouter request failed (${response.status})`;
+    throw new Error(detail);
+  }
+
+  const text = data.choices?.[0]?.message?.content || "";
+  if (!String(text).trim()) {
+    throw new Error("OpenRouter returned empty response");
+  }
+  return text;
+}
+
+async function requestAi(task, params) {
+  const config = getAiConfig();
+  const prompt = buildAiPrompt(task, params);
+  let response;
+  try {
+    response = await fetch(defaultAiProxyEndpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        provider: config.provider,
+        endpoint: config.endpoint,
+        model: config.model,
+        apiKey: config.apiKey,
+        prompt,
+      }),
+    });
+  } catch (error) {
+    throw new Error(
+      "AI 프록시에 연결할 수 없습니다. local-server.js를 실행 중인지 확인하세요. (http://localhost:3000)"
+    );
+  }
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    const message = String(data.message || "");
+    if (/fetch failed|ECONNREFUSED|ENOTFOUND/i.test(message)) {
+      throw new Error(
+        "선택한 AI 제공자에 연결할 수 없습니다. Ollama라면 앱 실행 상태/포트(11434), 클라우드 제공자라면 endpoint와 API key를 확인하세요."
+      );
+    }
+    throw new Error(message || `AI request failed (${response.status})`);
+  }
+  return String(data.output || "").trim();
+}
+
 function getStoredCircuitStates() {
   try {
     return JSON.parse(localStorage.getItem(circuitStateKey) || "{}");
@@ -453,8 +649,8 @@ async function executeRemote(runtime, code) {
       files: [{ content: code }],
       stdin: "",
       args: [],
-      compile_timeout: 10000,
-      run_timeout: 10000,
+      compile_timeout: 10,
+      run_timeout: 10,
     }),
   });
 
@@ -742,12 +938,33 @@ function initEditorPage() {
     }
     const mode = languageSamples[languageKey].mode || "cloud";
     if (mode === "preview") {
-      runModePill.textContent = "HTML Preview";
+      runModePill.textContent = "Web Preview";
     } else if (mode === "circuit") {
       runModePill.textContent = "Circuit + Cloud";
     } else {
       runModePill.textContent = "Cloud Runtime";
     }
+  }
+
+  function buildPreviewDocument(languageKey, code) {
+    if (languageKey === "css") {
+      return `<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>${code}</style>
+  </head>
+  <body>
+    <main class="card">
+      <h1 class="title">Hello from CSS</h1>
+      <p>왼쪽 에디터에서 CSS를 바꾸면 이 미리보기가 즉시 반영됩니다.</p>
+      <span class="badge">LIVE PREVIEW</span>
+    </main>
+  </body>
+</html>`;
+    }
+    return code;
   }
 
   function renderProjectList() {
@@ -845,8 +1062,8 @@ function initEditorPage() {
     }
 
     if (sample.mode === "preview") {
-      previewFrame.srcdoc = code;
-      outputConsole.textContent = "HTML 미리보기를 아래 프레임에 렌더링했습니다.";
+      previewFrame.srcdoc = buildPreviewDocument(languageKey, code);
+      outputConsole.textContent = `${sample.label} 미리보기를 아래 프레임에 렌더링했습니다.`;
       statusBadge.textContent = content[currentLocale].runDone;
       return;
     }
@@ -865,7 +1082,7 @@ function initEditorPage() {
     try {
       const result = await executeRemote(sample.runner, code);
       const compileOutput = result.compile?.output || "";
-      const runOutput = result.run?.output || "";
+      const runOutput = result.run?.stdout || result.run?.output || "";
       const merged = [compileOutput.trim(), runOutput.trim()].filter(Boolean).join("\n\n");
       outputConsole.textContent = merged || "실행 결과가 비어 있습니다.";
       statusBadge.textContent = content[currentLocale].runDone;
@@ -1143,20 +1360,173 @@ function initAssistantPage() {
   const learningGuide = document.getElementById("learningGuide");
   const ideaButton = document.getElementById("ideaButton");
   const assistantLanguageSelect = document.getElementById("assistantLanguageSelect");
-  if (!ideaPrompt || !ideaResponse || !learningGuide || !ideaButton || !assistantLanguageSelect) {
+  const coachLanguageSelect = document.getElementById("coachLanguageSelect");
+  const coachCodeInput = document.getElementById("coachCodeInput");
+  const coachGoalInput = document.getElementById("coachGoalInput");
+  const coachButton = document.getElementById("coachButton");
+  const coachResponse = document.getElementById("coachResponse");
+  const plannerPrompt = document.getElementById("plannerPrompt");
+  const plannerButton = document.getElementById("plannerButton");
+  const plannerResponse = document.getElementById("plannerResponse");
+  const aiProviderSelect = document.getElementById("aiProviderSelect");
+  const aiEndpointInput = document.getElementById("aiEndpointInput");
+  const aiModelInput = document.getElementById("aiModelInput");
+  const aiApiKeyInput = document.getElementById("aiApiKeyInput");
+  const aiSaveButton = document.getElementById("aiSaveButton");
+  const aiTestButton = document.getElementById("aiTestButton");
+  const aiConfigStatus = document.getElementById("aiConfigStatus");
+
+  if (
+    !ideaPrompt ||
+    !ideaResponse ||
+    !learningGuide ||
+    !ideaButton ||
+    !assistantLanguageSelect ||
+    !coachLanguageSelect ||
+    !coachCodeInput ||
+    !coachGoalInput ||
+    !coachButton ||
+    !coachResponse ||
+    !plannerPrompt ||
+    !plannerButton ||
+    !plannerResponse ||
+    !aiProviderSelect ||
+    !aiEndpointInput ||
+    !aiModelInput ||
+    !aiApiKeyInput ||
+    !aiSaveButton ||
+    !aiTestButton ||
+    !aiConfigStatus
+  ) {
     return;
   }
 
+  function fillAiConfigForm() {
+    const config = getAiConfig();
+    aiProviderSelect.value = config.provider;
+    aiEndpointInput.value = config.endpoint;
+    aiModelInput.value = config.model;
+    aiApiKeyInput.value = config.apiKey;
+  }
+
+  function readAiConfigForm() {
+    const provider = aiProviderSelect.value;
+    if (!Object.prototype.hasOwnProperty.call(aiProviderPresets, provider)) {
+      throw new Error("지원하지 않는 AI 제공자입니다.");
+    }
+    const endpoint = String(aiEndpointInput.value || "").trim();
+    const model = String(aiModelInput.value || "").trim();
+    const apiKey = String(aiApiKeyInput.value || "").trim();
+    if (!endpoint || !/^https?:\/\//i.test(endpoint)) {
+      throw new Error("Endpoint는 http/https 주소여야 합니다.");
+    }
+    if (!model) {
+      throw new Error("Model을 입력해 주세요.");
+    }
+    if ((provider === "huggingface" || provider === "openrouter") && !apiKey) {
+      throw new Error("이 제공자는 API Key가 필요합니다.");
+    }
+    return { provider, endpoint, model, apiKey };
+  }
+
+  function applyPreset(provider) {
+    const preset = aiProviderPresets[provider];
+    if (!preset) {
+      return;
+    }
+    aiEndpointInput.value = preset.endpoint;
+    aiModelInput.value = preset.model;
+    if (provider === "ollama") {
+      aiApiKeyInput.value = "";
+    }
+  }
+
   populateLanguageSelect(assistantLanguageSelect);
+  populateLanguageSelect(coachLanguageSelect);
   assistantLanguageSelect.value = "javascript";
+  coachLanguageSelect.value = "javascript";
   renderLearningGuide(learningGuide, assistantLanguageSelect.value);
   ideaResponse.textContent = content[currentLocale].ideaFallback;
+  coachResponse.textContent = "코드를 넣고 목표를 적으면 실제 AI가 개선안을 생성합니다.";
+  plannerResponse.textContent = "구현하고 싶은 기능을 입력하면 단계별 계획을 생성합니다.";
+  fillAiConfigForm();
+
+  aiProviderSelect.addEventListener("change", (event) => {
+    applyPreset(event.target.value);
+    aiConfigStatus.textContent = "제공자 프리셋을 불러왔습니다. 필요하면 수정 후 저장하세요.";
+  });
+
+  aiSaveButton.addEventListener("click", () => {
+    try {
+      const config = readAiConfigForm();
+      setAiConfig(config);
+      aiConfigStatus.textContent = `저장 완료: ${config.provider} / ${config.model}`;
+    } catch (error) {
+      aiConfigStatus.textContent = `설정 오류: ${error.message}`;
+    }
+  });
+
+  aiTestButton.addEventListener("click", async () => {
+    aiConfigStatus.textContent = "AI 연결 테스트 중...";
+    try {
+      const config = readAiConfigForm();
+      setAiConfig(config);
+      const result = await requestAi("idea", { prompt: "초보자를 위한 미니 프로젝트 2개만 제안해줘." });
+      aiConfigStatus.textContent = `연결 성공\n\n${String(result).trim().slice(0, 240)}...`;
+    } catch (error) {
+      aiConfigStatus.textContent = `연결 실패: ${error.message}`;
+    }
+  });
 
   assistantLanguageSelect.addEventListener("change", (event) => {
     renderLearningGuide(learningGuide, event.target.value);
   });
-  ideaButton.addEventListener("click", () => {
-    ideaResponse.textContent = buildIdeaResponse(ideaPrompt.value);
+
+  ideaButton.addEventListener("click", async () => {
+    const raw = ideaPrompt.value.trim();
+    if (!raw) {
+      ideaResponse.textContent = content[currentLocale].ideaFallback;
+      return;
+    }
+    ideaResponse.textContent = "AI가 아이디어를 생성 중입니다...";
+    try {
+      const result = await requestAi("idea", { prompt: raw });
+      ideaResponse.textContent = result;
+    } catch (error) {
+      ideaResponse.textContent = `AI 호출 실패\n\n${error.message}\n\n대체 제안:\n${buildIdeaResponse(raw)}`;
+    }
+  });
+
+  coachButton.addEventListener("click", async () => {
+    const code = coachCodeInput.value.trim();
+    const language = coachLanguageSelect.value;
+    const goal = coachGoalInput.value.trim();
+    if (!code) {
+      coachResponse.textContent = "코드를 입력해 주세요.";
+      return;
+    }
+    coachResponse.textContent = "AI 코드 코치가 분석 중입니다...";
+    try {
+      const result = await requestAi("coach", { language, code, goal });
+      coachResponse.textContent = result;
+    } catch (error) {
+      coachResponse.textContent = `AI 호출 실패\n\n${error.message}`;
+    }
+  });
+
+  plannerButton.addEventListener("click", async () => {
+    const prompt = plannerPrompt.value.trim();
+    if (!prompt) {
+      plannerResponse.textContent = "구현하고 싶은 기능을 입력해 주세요.";
+      return;
+    }
+    plannerResponse.textContent = "AI 플래너가 설계 단계를 생성 중입니다...";
+    try {
+      const result = await requestAi("planner", { prompt });
+      plannerResponse.textContent = result;
+    } catch (error) {
+      plannerResponse.textContent = `AI 호출 실패\n\n${error.message}`;
+    }
   });
 }
 

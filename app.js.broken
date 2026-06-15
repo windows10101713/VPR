@@ -1,0 +1,2446 @@
+const content = {
+  ko: {
+    runReady: "준비됨",
+    runDone: "실행 완료",
+    runSaved: "저장 완료",
+    runError: "실행 오류",
+    outputReady:
+      "실행 결과가 여기에 표시됩니다.\n\n힌트:\n- 대부분의 언어는 클라우드 런타임으로 실제 실행됩니다.\n- HTML은 미리보기 프레임에서 렌더링됩니다.\n- Arduino/ESP-IDF는 회로도 템플릿을 함께 제공합니다.",
+    unsupportedTag: "미지원",
+    runtimeDefaultStatus: "기본 로컬 런타임(localhost)을 사용 중입니다.",
+    runtimeUsingStatus: "사용 중 런타임",
+    runtimeHeadersJsonError: "Headers는 JSON 객체 형식이어야 합니다.",
+    runtimeEndpointError: "Endpoint는 http/https URL이어야 합니다.",
+    runtimeSavedMessage: "런타임 설정이 저장되었습니다. 다시 실행해 보세요.",
+    runtimeResetMessage: "런타임 설정이 기본값으로 초기화되었습니다.",
+    runtimeConfigErrorTitle: "런타임 설정 오류",
+    runTooFast: "요청이 너무 빠릅니다. 1초 후 다시 실행해 주세요.",
+    htmlPreviewRendered: "HTML 미리보기를 아래 프레임에 렌더링했습니다.",
+    runtimeNotPrepared: "현재 언어는 클라우드 런타임이 준비되지 않았습니다.",
+    emptyRunResult: "실행 결과가 비어 있습니다.",
+    runFailedTitle: "실행 실패",
+    runtimeUnsupportedMessage: "현재 런타임에서 지원되지 않는 언어는 선택창에서 자동으로 비활성화됩니다.",
+    terminalReady: "vpr-terminal ready\ntype: help",
+    terminalHelp:
+      "사용 가능한 명령:\n- help\n- clear\n- runtimes\n- run\n- pip install <패키지>\n- python <코드>\n- bash <명령>",
+    guiHintDefault:
+      "Python GUI 라이브러리(pygame/tkinter/pyqt 등)는 브라우저에서 네이티브 창으로 바로 열 수 없습니다. 대신 웹 렌더링 가능한 코드(HTML/Canvas) 또는 pygbag/pyscript 경로를 안내합니다.",
+    guiHintDetected:
+      "GUI 라이브러리 코드가 감지되었습니다.\n- 브라우저 환경에서는 네이티브 윈도우를 직접 띄울 수 없습니다.\n- 권장: pygame -> pygbag, tkinter/pyqt -> 데스크톱 Python 실행",
+    ideaFallback: "예제를 찾는 중이라면, 간단한 계산기나 숫자 맞추기 게임부터 시작해 보세요.",
+    learningIntro: "선택한 언어 학습 포인트",
+    errorEmpty: "오류 메시지를 입력하면 원인과 해결 방향을 제안합니다.",
+    saveEmpty: "프로젝트 이름을 먼저 입력하세요.",
+    saveMetaEmpty: "아직 저장된 프로젝트가 없습니다.",
+    libraryEmpty: "저장된 프로젝트가 없습니다. 저장 버튼으로 현재 코드를 보관해 보세요.",
+    homeEmpty: "아직 저장된 프로젝트가 없습니다. 에디터 페이지에서 첫 프로젝트를 저장해 보세요.",
+  },
+  en: {
+    runReady: "Ready",
+    runDone: "Run complete",
+    runSaved: "Saved",
+    runError: "Run error",
+    outputReady:
+      "Execution results will appear here.\n\nHints:\n- Most languages run on a cloud runtime.\n- HTML renders in preview frame.\n- Arduino/ESP-IDF include a circuit template panel.",
+    unsupportedTag: "Unsupported",
+    runtimeDefaultStatus: "Using default local runtime (localhost).",
+    runtimeUsingStatus: "Runtime in use",
+    runtimeHeadersJsonError: "Headers must be a JSON object.",
+    runtimeEndpointError: "Endpoint must be an http/https URL.",
+    runtimeSavedMessage: "Runtime settings saved. Try running again.",
+    runtimeResetMessage: "Runtime settings reset to defaults.",
+    runtimeConfigErrorTitle: "Runtime settings error",
+    runTooFast: "Requests are too frequent. Try again in 1 second.",
+    htmlPreviewRendered: "HTML preview rendered in the frame below.",
+    runtimeNotPrepared: "Cloud runtime is not configured for this language.",
+    emptyRunResult: "Execution returned no output.",
+    runFailedTitle: "Execution failed",
+    runtimeUnsupportedMessage: "Languages not supported by the current runtime are automatically disabled in the selector.",
+    terminalReady: "vpr-terminal ready\ntype: help",
+    terminalHelp:
+      "Available commands:\n- help\n- clear\n- runtimes\n- run\n- pip install <package>\n- python <code>\n- bash <command>",
+    guiHintDefault:
+      "Native Python GUI frameworks (pygame/tkinter/pyqt) cannot open desktop windows directly in a browser runtime. Use web-renderable code (HTML/Canvas) or pygbag/pyscript paths.",
+    guiHintDetected:
+      "GUI framework code detected.\n- Native desktop windows cannot be opened directly in browser runtime.\n- Recommended: pygame -> pygbag, tkinter/pyqt -> desktop Python run",
+    ideaFallback: "If you need a starter idea, build a calculator or a number guessing game first.",
+    learningIntro: "Learning points for the selected language",
+    errorEmpty: "Paste an error message to get a likely cause and fix direction.",
+    saveEmpty: "Enter a project name first.",
+    saveMetaEmpty: "No saved project yet.",
+    libraryEmpty: "No saved projects yet. Use Save to keep the current draft.",
+    homeEmpty: "No saved projects yet. Save your first project from the editor page.",
+  },
+};
+
+const storageKey = "vpr-projects";
+const lastProjectKey = "vpr-last-project";
+const localeKey = "vpr-locale";
+const pendingSnippetKey = "vpr-pending-snippet";
+const usersKey = "vpr-users";
+const sessionUserKey = "vpr-session-user";
+const publicSnippetsKey = "vpr-public-snippets";
+const runThrottleKey = "vpr-last-run-ts";
+const runtimeConfigKey = "vpr-runtime-config";
+const circuitStateKey = "vpr-circuit-state";
+const defaultRuntimeEndpoint = "http://localhost:2000/api/v2/execute";
+const defaultRuntimeTimeoutMs = 3000;
+let runtimeCatalogCache = { endpoint: "", runtimes: null };
+
+const languageSamples = {
+  javascript: {
+    label: "JavaScript",
+    extension: "js",
+    runner: { language: "javascript", version: "18.15.0" },
+    guide: [
+      "브라우저 DOM과 런타임 API를 구분하세요.",
+      "작은 함수 단위로 분리하면 디버깅이 쉬워집니다.",
+      "실행 전 입력값 검증을 습관화하세요.",
+    ],
+    code: "console.log('Hello from JavaScript');\nconsole.log(2 + 3);",
+  },
+  typescript: {
+    label: "TypeScript",
+    extension: "ts",
+    runner: { language: "typescript", version: "5.0.3" },
+    guide: ["타입 추론을 활용하되 핵심 API는 명시 타입을 지정하세요.", "interface와 type의 용도를 구분하세요."],
+    code: "const sum = (a: number, b: number): number => a + b;\nconsole.log(sum(2, 5));",
+  },
+  python: {
+    label: "Python",
+    extension: "py",
+    runner: { language: "python", version: "3.10.0" },
+    guide: ["들여쓰기 정렬을 항상 일정하게 유지하세요.", "Traceback 마지막 줄부터 원인 파악을 시작하세요."],
+    code: "def greet(name):\n    return f'Hello, {name}'\n\nprint(greet('VPR'))",
+  },
+  c: {
+    label: "C",
+    extension: "c",
+    runner: { language: "c", version: "10.2.0" },
+    guide: ["헤더, 타입, 포인터 초기화를 꼼꼼히 확인하세요.", "경계 검사 없는 배열 접근을 피하세요."],
+    code: "#include <stdio.h>\n\nint main(void) {\n    printf(\"Hello from C\\n\");\n    return 0;\n}",
+  },
+  cpp: {
+    label: "C++",
+    extension: "cpp",
+    runner: { language: "c++", version: "10.2.0" },
+    guide: ["컴파일 에러와 런타임 에러를 분리해 해석하세요.", "STL 사용 시 범위 체크를 우선하세요."],
+    code: "#include <iostream>\n\nint main() {\n    std::cout << \"Hello from C++\\n\";\n    return 0;\n}",
+  },
+  csharp: {
+    label: "C#",
+    extension: "cs",
+    runner: { language: "csharp", version: "6.12.0" },
+    guide: ["null 가능 참조를 고려한 방어 코드를 작성하세요.", "작은 메서드 단위로 책임을 분리하세요."],
+    code: "using System;\n\nclass Program {\n  static void Main() {\n    Console.WriteLine(\"Hello from C#\");\n  }\n}",
+  },
+  java: {
+    label: "Java",
+    extension: "java",
+    runner: { language: "java", version: "15.0.2" },
+    guide: ["클래스명과 파일명 일치를 지키세요.", "예외 메시지를 그대로 숨기지 마세요."],
+    code: "public class Main {\n  public static void main(String[] args) {\n    System.out.println(\"Hello from Java\");\n  }\n}",
+  },
+  go: {
+    label: "Go",
+    extension: "go",
+    runner: { language: "go", version: "1.16.2" },
+    guide: ["error 반환값을 무시하지 마세요.", "패키지 구조를 단순하게 유지하세요."],
+    code: "package main\n\nimport \"fmt\"\n\nfunc main() {\n  fmt.Println(\"Hello from Go\")\n}",
+  },
+  rust: {
+    label: "Rust",
+    extension: "rs",
+    runner: { language: "rust", version: "1.68.2" },
+    guide: ["소유권 에러를 타입 설계 문제로 보세요.", "panic보다 Result 기반 처리로 확장성을 확보하세요."],
+    code: "fn main() {\n    println!(\"Hello from Rust\");\n}",
+  },
+  php: {
+    label: "PHP",
+    extension: "php",
+    runner: { language: "php", version: "8.2.3" },
+    guide: ["입력값은 필터링 후 사용하세요.", "예외 기반 오류 처리 규칙을 통일하세요."],
+    code: "<?php\necho \"Hello from PHP\\n\";\n",
+  },
+  ruby: {
+    label: "Ruby",
+    extension: "rb",
+    runner: { language: "ruby", version: "3.0.1" },
+    guide: ["메서드 책임을 작게 유지하세요.", "동적 타입이라도 입력 검증은 필수입니다."],
+    code: "puts 'Hello from Ruby'",
+  },
+  kotlin: {
+    label: "Kotlin",
+    extension: "kt",
+    runner: { language: "kotlin", version: "1.8.20" },
+    guide: ["null-safe 연산자를 적극 활용하세요.", "데이터 클래스와 확장 함수를 과도하게 남용하지 마세요."],
+    code: "fun main() {\n  println(\"Hello from Kotlin\")\n}",
+  },
+  swift: {
+    label: "Swift",
+    extension: "swift",
+    runner: { language: "swift", version: "5.3.3" },
+    guide: ["옵셔널 언래핑 경로를 명확히 하세요.", "값 타입/참조 타입 선택 이유를 분명히 하세요."],
+    code: "print(\"Hello from Swift\")",
+  },
+  html: {
+    label: "HTML",
+    extension: "html",
+    mode: "preview",
+    guide: ["시맨틱 태그를 우선 사용하세요.", "스타일/동작 분리를 유지하세요."],
+    code: "<!DOCTYPE html>\n<html lang=\"ko\">\n  <body>\n    <h1>Hello from HTML</h1>\n    <p>Preview works in the panel.</p>\n  </body>\n</html>",
+  },
+  arduino: {
+    label: "Arduino",
+    extension: "ino",
+    mode: "circuit",
+    guide: ["핀 번호와 전원 연결을 먼저 설계하세요.", "센서 전압 범위 확인 후 연결하세요."],
+    code: "void setup() {\n  Serial.begin(9600);\n  pinMode(13, OUTPUT);\n}\n\nvoid loop() {\n  digitalWrite(13, HIGH);\n  delay(500);\n  digitalWrite(13, LOW);\n  delay(500);\n}",
+  },
+  espidf: {
+    label: "ESP-IDF",
+    extension: "c",
+    mode: "circuit",
+    guide: ["ESP32 핀맵과 전원 요구사항을 먼저 확인하세요.", "FreeRTOS task 분리를 작게 시작하세요."],
+    code: "#include <stdio.h>\n#include \"freertos/FreeRTOS.h\"\n#include \"freertos/task.h\"\n\nvoid app_main(void) {\n  while (1) {\n    printf(\"Hello from ESP-IDF\\n\");\n    vTaskDelay(1000 / portTICK_PERIOD_MS);\n  }\n}",
+  },
+};
+
+const ideaTemplates = [
+  {
+    match: /게임|game/i,
+    text: "초보자용 게임 아이디어\n1. 숫자 맞추기 게임\n2. 반응 속도 측정 게임\n3. 사칙연산 퀴즈 게임",
+  },
+  {
+    match: /임베디드|arduino|esp/i,
+    text: "임베디드 아이디어\n1. 온습도 모니터\n2. LED 패턴 제어기\n3. Wi-Fi 상태 알림 장치",
+  },
+  {
+    match: /웹|html|js|javascript/i,
+    text: "웹 프로젝트 아이디어\n1. 메모장형 온라인 에디터\n2. 학습 타이머\n3. 에러 메시지 해설 페이지",
+  },
+];
+
+const errorGuides = [
+  {
+    language: "all",
+    match: /syntaxerror|invalid syntax|unexpected token|parse error/i,
+    ko: "문법 오류입니다. 괄호/따옴표/세미콜론/콜론 누락을 먼저 확인하고 최근 수정 라인을 우선 점검하세요.",
+    en: "Syntax error detected. Check missing brackets/quotes/semicolons/colons first, then inspect recently edited lines.",
+  },
+  {
+    language: "all",
+    match: /null|undefined|none|nil|cannot read properties/i,
+    ko: "초기화되지 않은 값 접근일 가능성이 큽니다. null 체크, 기본값, 반환값 유효성을 확인하세요.",
+    en: "Likely uninitialized value access. Validate null checks, default values, and return value assumptions.",
+  },
+  {
+    language: "python",
+    match: /indentationerror|taberror/i,
+    ko: "Python 들여쓰기 오류입니다. 공백/탭 혼용 여부와 블록 정렬을 통일하세요.",
+    en: "Python indentation issue. Avoid mixed tabs/spaces and align block indentation consistently.",
+  },
+  {
+    language: "python",
+    match: /modulenotfounderror|no module named/i,
+    ko: "패키지가 런타임에 없습니다. 터미널에서 pip install 시도 후, 여전히 실패하면 런타임 이미지에 패키지를 포함해야 합니다.",
+    en: "Package is missing in runtime. Try pip install in terminal; if it still fails, include the package in runtime image.",
+  },
+  {
+    language: "c",
+    match: /undefined reference|ld returned|implicit declaration/i,
+    ko: "C 링크/선언 오류입니다. 함수 선언/정의와 헤더 포함을 점검하고, 심볼 이름 오타를 확인하세요.",
+    en: "C link/declaration issue. Verify function declarations/definitions, included headers, and symbol spelling.",
+  },
+  {
+    language: "cpp",
+    match: /no matching function|std::|template|undefined reference/i,
+    ko: "C++ 타입/템플릿 또는 링크 오류입니다. 시그니처 일치, 네임스페이스, 링크 대상을 확인하세요.",
+    en: "C++ type/template or linker issue. Check signature match, namespaces, and linked targets.",
+  },
+  {
+    language: "java",
+    match: /cannot find symbol|class .* is public|exception in thread|javac/i,
+    ko: "Java 컴파일/클래스 오류입니다. 클래스명-파일명 일치, import, static/main 시그니처를 확인하세요.",
+    en: "Java compile/class issue. Verify class/file name match, imports, and static main signature.",
+  },
+  {
+    language: "csharp",
+    match: /cs\d{4}|namespace|type or namespace name/i,
+    ko: "C# 컴파일 오류입니다. using/namespace, 접근 제한자, Main 메서드 시그니처를 확인하세요.",
+    en: "C# compile issue. Check using/namespace declarations, access modifiers, and Main method signature.",
+  },
+  {
+    language: "go",
+    match: /undefined:|cannot use|expected .* found|panic:/i,
+    ko: "Go 타입/참조 오류입니다. import 누락, 타입 일치, error 처리 누락 여부를 확인하세요.",
+    en: "Go type/reference issue. Check missing imports, type compatibility, and error handling paths.",
+  },
+  {
+    language: "rust",
+    match: /borrowed value|moved value|trait bound|cannot borrow/i,
+    ko: "Rust 소유권/borrow 오류입니다. 참조 수명, 소유권 이동, trait 구현 충족 여부를 점검하세요.",
+    en: "Rust ownership/borrow issue. Review lifetimes, move semantics, and trait bound satisfaction.",
+  },
+  {
+    language: "php",
+    match: /fatal error|parse error|undefined variable|call to undefined function/i,
+    ko: "PHP 런타임 오류입니다. 변수 초기화, 함수/파일 include, 세미콜론 누락을 확인하세요.",
+    en: "PHP runtime issue. Check variable initialization, includes, and missing semicolons.",
+  },
+  {
+    language: "ruby",
+    match: /undefined method|nomethoderror|syntax error/i,
+    ko: "Ruby 메서드/문법 오류입니다. 객체 타입과 메서드 존재 여부, 블록 문법을 확인하세요.",
+    en: "Ruby method/syntax issue. Verify object type, method existence, and block syntax.",
+  },
+  {
+    language: "kotlin",
+    match: /unresolved reference|type mismatch|expecting/i,
+    ko: "Kotlin 컴파일 오류입니다. import, null-safe 타입, 함수 시그니처를 점검하세요.",
+    en: "Kotlin compile issue. Check imports, null-safe types, and function signatures.",
+  },
+  {
+    language: "swift",
+    match: /cannot find|use of unresolved identifier|value of optional type/i,
+    ko: "Swift 식별자/옵셔널 처리 오류입니다. 타입 추론과 optional unwrapping 경로를 확인하세요.",
+    en: "Swift identifier/optional handling issue. Review type inference and optional unwrapping paths.",
+  },
+];
+
+const snippets = [
+  {
+    title: "숫자 맞추기 게임",
+    description: "조건문과 반복문을 연습하는 입문용 콘솔 프로젝트",
+    language: "javascript",
+    code: "const answer = 7;\nconst guess = 5;\nif (guess === answer) {\n  console.log('정답입니다!');\n} else {\n  console.log('다시 시도하세요.');\n}",
+  },
+  {
+    title: "HTML 포트폴리오 페이지",
+    description: "태그 구조와 CSS 레이아웃을 배우기 좋은 예제",
+    language: "html",
+    code: "<!DOCTYPE html>\n<html lang=\"ko\">\n  <body>\n    <main><h1>홍길동 포트폴리오</h1><p>웹 프론트엔드 입문 학습 중입니다.</p></main>\n  </body>\n</html>",
+  },
+  {
+    title: "Arduino Blink",
+    description: "LED 제어와 핀 설정 입문 예제",
+    language: "arduino",
+    code: languageSamples.arduino.code,
+  },
+  {
+    title: "Python ToDo CLI",
+    description: "리스트/루프/입력 처리를 연습하는 간단한 할 일 관리기",
+    language: "python",
+    code: "tasks = []\n\nwhile True:\n    cmd = input('add/list/quit > ').strip()\n    if cmd == 'add':\n        tasks.append(input('task: ').strip())\n    elif cmd == 'list':\n        for i, task in enumerate(tasks, 1):\n            print(f'{i}. {task}')\n    elif cmd == 'quit':\n        break\n",
+  },
+  {
+    title: "Go REST Shape",
+    description: "간단한 JSON API 응답 구조를 만드는 Go 기본 예제",
+    language: "go",
+    code: "package main\n\nimport (\n  \"encoding/json\"\n  \"fmt\"\n)\n\nfunc main() {\n  payload := map[string]any{\"ok\": true, \"service\": \"vpr\"}\n  b, _ := json.MarshalIndent(payload, \"\", \"  \")\n  fmt.Println(string(b))\n}",
+  },
+  {
+    title: "C Pointer Safety",
+    description: "포인터와 배열 경계 체크를 함께 연습하는 예제",
+    language: "c",
+    code: "#include <stdio.h>\n\nint main(void) {\n  int arr[3] = {1, 2, 3};\n  for (int i = 0; i < 3; i++) {\n    printf(\"%d\\n\", arr[i]);\n  }\n  return 0;\n}",
+  },
+  {
+    title: "C++ Vector Search",
+    description: "STL vector와 find 알고리즘 사용 예제",
+    language: "cpp",
+    code: "#include <iostream>\n#include <vector>\n#include <algorithm>\n\nint main() {\n  std::vector<int> nums = {3, 7, 11, 19};\n  auto it = std::find(nums.begin(), nums.end(), 11);\n  std::cout << (it != nums.end() ? \"found\" : \"not found\") << std::endl;\n  return 0;\n}",
+  },
+  {
+    title: "Java Class Starter",
+    description: "객체 생성과 메서드 호출 흐름을 보는 Java 입문 예제",
+    language: "java",
+    code: "class Greeter {\n  String say(String name) {\n    return \"Hello, \" + name;\n  }\n}\n\npublic class Main {\n  public static void main(String[] args) {\n    Greeter g = new Greeter();\n    System.out.println(g.say(\"VPR\"));\n  }\n}",
+  },
+  {
+    title: "C# LINQ Mini",
+    description: "필터링과 집계를 동시에 연습하는 C# LINQ 예제",
+    language: "csharp",
+    code: "using System;\nusing System.Linq;\n\nclass Program {\n  static void Main() {\n    var nums = new[] { 2, 5, 9, 12, 17 };\n    var sum = nums.Where(n => n % 2 == 1).Sum();\n    Console.WriteLine(sum);\n  }\n}",
+  },
+  {
+    title: "Rust Result Flow",
+    description: "Result 기반 오류 처리를 연습하는 Rust 예제",
+    language: "rust",
+    code: "fn divide(a: i32, b: i32) -> Result<i32, String> {\n    if b == 0 {\n        return Err(\"divide by zero\".to_string());\n    }\n    Ok(a / b)\n}\n\nfn main() {\n    match divide(10, 2) {\n        Ok(v) => println!(\"{}\", v),\n        Err(e) => println!(\"error: {}\", e),\n    }\n}",
+  },
+  {
+    title: "Kotlin Data Class",
+    description: "data class와 컬렉션 매핑을 연습하는 Kotlin 예제",
+    language: "kotlin",
+    code: "data class User(val name: String, val score: Int)\n\nfun main() {\n  val users = listOf(User(\"A\", 50), User(\"B\", 80))\n  val names = users.filter { it.score >= 60 }.map { it.name }\n  println(names)\n}",
+  },
+  {
+    title: "Swift Optional Guard",
+    description: "옵셔널 처리와 guard 패턴을 익히는 Swift 예제",
+    language: "swift",
+    code: "func printName(_ name: String?) {\n  guard let safe = name else {\n    print(\"no name\")\n    return\n  }\n  print(\"name: \\(safe)\")\n}\n\nprintName(\"VPR\")",
+  },
+  {
+    title: "PHP Assoc Array",
+    description: "연관 배열과 반복문을 사용하는 PHP 기초 예제",
+    language: "php",
+    code: "<?php\n$user = [\"name\" => \"vpr\", \"level\" => 1];\nforeach ($user as $k => $v) {\n  echo $k . \": \" . $v . PHP_EOL;\n}\n",
+  },
+  {
+    title: "Ruby Class Basics",
+    description: "클래스/인스턴스/메서드 기본 구조를 익히는 Ruby 예제",
+    language: "ruby",
+    code: "class Bot\n  def greet(name)\n    \"Hello, #{name}\"\n  end\nend\n\nbot = Bot.new\nputs bot.greet('VPR')",
+  },
+];
+
+let currentLocale = localStorage.getItem(localeKey) || "ko";
+
+function tr(key) {
+  return content[currentLocale]?.[key] ?? key;
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function sanitizeName(value) {
+  return String(value).trim().replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 20);
+}
+
+function getProjects() {
+  try {
+    return JSON.parse(localStorage.getItem(storageKey) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function setProjects(projects) {
+  localStorage.setItem(storageKey, JSON.stringify(projects));
+}
+
+function getUsers() {
+  try {
+    return JSON.parse(localStorage.getItem(usersKey) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function setUsers(users) {
+  localStorage.setItem(usersKey, JSON.stringify(users));
+}
+
+function getCurrentUser() {
+  return localStorage.getItem(sessionUserKey);
+}
+
+function setCurrentUser(username) {
+  if (username) {
+    localStorage.setItem(sessionUserKey, username);
+  } else {
+    localStorage.removeItem(sessionUserKey);
+  }
+}
+
+function getPublicSnippets() {
+  try {
+    return JSON.parse(localStorage.getItem(publicSnippetsKey) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function setPublicSnippets(items) {
+  localStorage.setItem(publicSnippetsKey, JSON.stringify(items));
+}
+
+function formatTimestamp(timestamp) {
+  return new Intl.DateTimeFormat(currentLocale === "ko" ? "ko-KR" : "en-US", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(timestamp));
+}
+
+function buildIdeaResponse(prompt) {
+  const found = ideaTemplates.find((template) => template.match.test(prompt));
+  return found ? found.text : content[currentLocale].ideaFallback;
+}
+
+function buildErrorResponse(message, languageKey = "all") {
+  if (!message.trim()) {
+    return content[currentLocale].errorEmpty;
+  }
+
+  const found = errorGuides.find((guide) => {
+    const languageMatched = guide.language === "all" || guide.language === languageKey;
+    return languageMatched && guide.match.test(message);
+  });
+  return found
+    ? found[currentLocale]
+    : currentLocale === "ko"
+      ? "오류 유형이 명확하지 않습니다. 최근 변경 코드와 에러 라인을 우선 확인하세요."
+      : "Error type is unclear. Start with recently changed lines and the reported line number.";
+}
+
+function detectErrorLine(message) {
+  const patterns = [/line\s+(\d+)/i, /:(\d+):(\d+)/, /at\s+line\s+(\d+)/i];
+  for (const pattern of patterns) {
+    const matched = String(message || "").match(pattern);
+    if (matched && matched[1]) {
+      const line = Number(matched[1]);
+      if (!Number.isNaN(line) && line > 0) {
+        return line;
+      }
+    }
+  }
+  return null;
+}
+
+function getLineContext(code, lineNumber) {
+  const lines = String(code || "").split("\n");
+  if (!lineNumber || !lines.length) {
+    return { target: "", before: "", after: "" };
+  }
+  const index = Math.max(0, Math.min(lines.length - 1, lineNumber - 1));
+  return {
+    target: lines[index] || "",
+    before: lines[index - 1] || "",
+    after: lines[index + 1] || "",
+  };
+}
+
+function buildFixTemplate(languageKey, targetLine) {
+  if (/python/.test(languageKey)) {
+    return `# 기존: ${targetLine || "(문제 라인)"}\n# 수정: 값 확인 후 접근\nif value is not None:\n    print(value)`;
+  }
+  if (/javascript|typescript/.test(languageKey)) {
+    return `// 기존: ${targetLine || "(problematic line)"}\n// 수정: optional chaining + 기본값\nconst safe = obj?.value ?? defaultValue;`;
+  }
+  if (/c|cpp/.test(languageKey)) {
+    return `// 기존: ${targetLine || "(problematic line)"}\n// 수정: 포인터/인덱스 가드\nif (ptr != NULL && idx >= 0 && idx < len) {\n  /* ... */\n}`;
+  }
+  if (/java|csharp|kotlin|swift/.test(languageKey)) {
+    return `// 기존: ${targetLine || "(problematic line)"}\n// 수정: null/optional 검사 후 사용\nif (value != null) {\n  // ...\n}`;
+  }
+  return `// 기존: ${targetLine || "(problematic line)"}\n// 수정: 입력값/참조값 유효성 검사를 먼저 수행하세요.`;
+}
+
+function buildDetailedErrorReview(message, languageKey, fileName, code) {
+  const basic = buildErrorResponse(message, languageKey);
+  const line = detectErrorLine(message);
+  const context = getLineContext(code, line);
+  const fixTemplate = buildFixTemplate(languageKey, context.target.trim());
+  const logicalHint =
+    context.target.trim().length > 0
+      ? `문제가 날 가능성이 높은 로직: ${context.target.trim()}`
+      : "문제가 날 가능성이 높은 로직: 에러 메시지에 포함된 함수 호출/변수 접근 부분";
+  const sectionTitle = currentLocale === "ko" ? "상세 분석" : "Detailed Review";
+  const fileLabel = currentLocale === "ko" ? "파일" : "File";
+  const lineLabel = currentLocale === "ko" ? "라인" : "Line";
+  const proposalLabel = currentLocale === "ko" ? "수정 제안" : "Fix Proposal";
+
+  return [
+    basic,
+    "",
+    `[${sectionTitle}]`,
+    `${fileLabel}: ${fileName || "(unknown file)"}`,
+    `${lineLabel}: ${line || "(line info not found)"}`,
+    logicalHint,
+    context.before ? `${currentLocale === "ko" ? "이전 라인" : "Previous line"}: ${context.before.trim()}` : "",
+    context.after ? `${currentLocale === "ko" ? "다음 라인" : "Next line"}: ${context.after.trim()}` : "",
+    "",
+    `[${proposalLabel}]`,
+    fixTemplate,
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+function buildCoachResponse(languageKey, code, goal) {
+  if (!String(code || "").trim()) {
+    return currentLocale === "ko" ? "코드를 입력하면 개선 포인트를 제안합니다." : "Paste code to get optimization suggestions.";
+  }
+
+  const lines = String(code).split("\n");
+  const tips = [];
+  if (lines.length > 80) {
+    tips.push(currentLocale === "ko" ? "파일이 길어서 함수 단위 분리가 필요합니다." : "The file is long; split logic into smaller functions.");
+  }
+  if (/console\.log|print\(/.test(code) && !/error|warn|logger/i.test(code)) {
+    tips.push(currentLocale === "ko" ? "디버그 출력과 실제 로그 체계를 분리하세요." : "Separate debugging prints from structured logging.");
+  }
+  if (/while\s*\(true\)|for\s*\(;;\)/.test(code)) {
+    tips.push(currentLocale === "ko" ? "무한 루프에는 종료 조건 또는 타임아웃 가드를 두세요." : "Infinite loops should have an exit condition or timeout guard.");
+  }
+  if (/fetch\(|axios\.|requests\./.test(code) && !/try\s*\{|catch|except/.test(code)) {
+    tips.push(currentLocale === "ko" ? "네트워크 호출에 예외 처리와 재시도 전략을 추가하세요." : "Add error handling and retry strategy to network calls.");
+  }
+
+  const goalLine = goal
+    ? currentLocale === "ko"
+      ? `목표 반영: ${goal}`
+      : `Goal focus: ${goal}`
+    : currentLocale === "ko"
+      ? "목표를 입력하면 더 정확한 추천이 가능합니다."
+      : "Add a goal for more targeted advice.";
+
+  return [
+    currentLocale === "ko" ? `[AI 코드 코치] ${languageSamples[languageKey]?.label || languageKey}` : `[AI Code Coach] ${languageSamples[languageKey]?.label || languageKey}`,
+    goalLine,
+    "",
+    ...(tips.length
+      ? tips.map((tip, index) => `${index + 1}. ${tip}`)
+      : [currentLocale === "ko" ? "코드 구조가 비교적 단순합니다. 함수 분리와 테스트 케이스 추가를 추천합니다." : "Code looks fairly simple. Consider function decomposition and additional tests."]),
+  ].join("\n");
+}
+
+function buildPlannerResponse(prompt) {
+  if (!String(prompt || "").trim()) {
+    return currentLocale === "ko" ? "원하는 기능을 입력하면 단계별 구현 계획을 제공합니다." : "Describe features to receive a phased implementation plan.";
+  }
+
+  const phasesKo = [
+    "1. 요구사항 분해: 사용자 흐름/입력/출력/오류 조건 정의",
+    "2. 데이터 모델 설계: 저장 구조와 키 이름 확정",
+    "3. 화면 설계: 페이지/컴포넌트/상태 전이 작성",
+    "4. 핵심 로직 구현: 최소 기능(MVP)부터 연결",
+    "5. 예외 처리 강화: 입력 검증, 실패 폴백, 로그 정리",
+    "6. 테스트: 대표 시나리오 + 경계 케이스 검증",
+  ];
+  const phasesEn = [
+    "1. Break requirements into user flow, input-output, and failure cases",
+    "2. Design data model and key naming",
+    "3. Define pages/components and state transitions",
+    "4. Implement core MVP path first",
+    "5. Add validation, fallback paths, and logging",
+    "6. Test happy path and edge cases",
+  ];
+
+  return `${currentLocale === "ko" ? "[AI 설계 플랜]" : "[AI Architecture Plan]"}\n요청: ${prompt}\n\n${
+    currentLocale === "ko" ? phasesKo.join("\n") : phasesEn.join("\n")
+  }`;
+}
+
+function applyLocaleSelections() {
+  document.querySelectorAll("#localeSelect").forEach((select) => {
+    select.value = currentLocale;
+    select.addEventListener("change", (event) => {
+      currentLocale = event.target.value;
+      localStorage.setItem(localeKey, currentLocale);
+      location.reload();
+    });
+  });
+}
+
+function initSidebarToggle() {
+  const topbar = document.querySelector(".topbar");
+  const sidebar = document.querySelector(".sidebar");
+  if (!topbar || !sidebar) {
+    return;
+  }
+
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "sidebar-toggle";
+  button.textContent = "Menu";
+  button.setAttribute("aria-label", "Toggle sidebar");
+  topbar.prepend(button);
+
+  button.addEventListener("click", () => {
+    document.body.classList.toggle("sidebar-open");
+  });
+
+  document.querySelectorAll(".menu-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      document.body.classList.remove("sidebar-open");
+    });
+  });
+}
+
+function renderAuthShortcut() {
+  const sessionUser = getCurrentUser();
+  document.querySelectorAll(".topbar-actions").forEach((container) => {
+    const wrapper = document.createElement("div");
+    wrapper.className = "auth-inline";
+
+    if (sessionUser) {
+      wrapper.innerHTML = `
+        <span class="auth-chip">@${escapeHtml(sessionUser)}</span>
+        <a class="ghost-button" href="profile.html">프로필</a>`;
+    } else {
+      wrapper.innerHTML = `<a class="ghost-button" href="login.html">로그인</a>`;
+    }
+
+    container.appendChild(wrapper);
+  });
+}
+
+function populateLanguageSelect(select) {
+  if (!select) {
+    return;
+  }
+
+  select.innerHTML = Object.entries(languageSamples)
+    .map(([value, sample]) => `<option value="${value}">${sample.label}</option>`)
+    .join("");
+}
+
+function renderLearningGuide(target, languageKey) {
+  if (!target) {
+    return;
+  }
+
+  const sample = languageSamples[languageKey];
+  target.innerHTML = `${content[currentLocale].learningIntro}<br /><br />${sample.guide
+    .map((line) => `- ${line}`)
+    .join("<br />")}`;
+}
+
+function resetPreview(previewFrame) {
+  if (!previewFrame) {
+    return;
+  }
+
+  previewFrame.srcdoc = `
+    <body style="font-family: sans-serif; padding: 24px; color: #475569; background: #fff;">
+      <h3 style="margin-top: 0;">Preview standby</h3>
+      <p>HTML 코드를 실행하면 이 영역에 실제 결과가 표시됩니다.</p>
+    </body>`;
+}
+
+function getDefaultCircuitModel(languageKey) {
+  if (languageKey === "arduino") {
+    return {
+      nodes: [
+        { id: "a-board", type: "module", name: "Arduino UNO", pin: "5V/GND", x: 34, y: 38 },
+        { id: "a-bread", type: "module", name: "Breadboard", pin: "+ / - rail", x: 250, y: 42 },
+        { id: "a-res", type: "resistor", name: "Resistor", pin: "220R", x: 430, y: 128 },
+        { id: "a-led", type: "led", name: "LED", pin: "D13", x: 620, y: 130 },
+      ],
+      wires: [
+        { from: "a-board", to: "a-bread" },
+        { from: "a-board", to: "a-res" },
+        { from: "a-res", to: "a-led" },
+      ],
+    };
+  }
+
+  return {
+    nodes: [
+      { id: "e-esp32", type: "module", name: "ESP32 DevKit", pin: "3V3/GND", x: 34, y: 38 },
+      { id: "e-sensor", type: "sensor", name: "Sensor", pin: "VCC/GND", x: 260, y: 54 },
+      { id: "e-res", type: "resistor", name: "Resistor", pin: "220R", x: 462, y: 136 },
+      { id: "e-led", type: "led", name: "LED", pin: "GPIO2", x: 650, y: 140 },
+    ],
+    wires: [
+      { from: "e-esp32", to: "e-sensor" },
+      { from: "e-esp32", to: "e-res" },
+      { from: "e-res", to: "e-led" },
+    ],
+  };
+}
+
+async function hashPassword(raw) {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(raw);
+  const digest = await crypto.subtle.digest("SHA-256", data);
+  return Array.from(new Uint8Array(digest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+function canRunNow() {
+  const last = Number(localStorage.getItem(runThrottleKey) || 0);
+  const now = Date.now();
+  if (now - last < 1200) {
+    return false;
+  }
+  localStorage.setItem(runThrottleKey, String(now));
+  return true;
+}
+
+function getRuntimeConfig() {
+  try {
+    const parsed = JSON.parse(localStorage.getItem(runtimeConfigKey) || "{}");
+    const endpoint = String(parsed.endpoint || defaultRuntimeEndpoint).trim();
+    const headers = parsed.headers && typeof parsed.headers === "object" ? parsed.headers : {};
+    return { endpoint, headers };
+  } catch {
+    return { endpoint: defaultRuntimeEndpoint, headers: {} };
+  }
+}
+
+function setRuntimeConfig(config) {
+  localStorage.setItem(runtimeConfigKey, JSON.stringify(config));
+}
+
+function getStoredCircuitStates() {
+  try {
+    return JSON.parse(localStorage.getItem(circuitStateKey) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function setStoredCircuitStates(stateMap) {
+  localStorage.setItem(circuitStateKey, JSON.stringify(stateMap));
+}
+
+function getRuntimesEndpoint(executeEndpoint) {
+  if (executeEndpoint.includes("/piston/execute")) {
+    return executeEndpoint.replace("/piston/execute", "/piston/runtimes");
+  }
+  if (executeEndpoint.endsWith("/execute")) {
+    return executeEndpoint.replace(/\/execute$/, "/runtimes");
+  }
+  return `${executeEndpoint}/runtimes`;
+}
+
+async function getRuntimeCatalog(runtimeConfig, headers) {
+  if (runtimeCatalogCache.endpoint === runtimeConfig.endpoint && Array.isArray(runtimeCatalogCache.runtimes)) {
+    return runtimeCatalogCache.runtimes;
+  }
+
+  const response = await fetch(getRuntimesEndpoint(runtimeConfig.endpoint), {
+    method: "GET",
+    headers,
+  });
+  if (!response.ok) {
+    return null;
+  }
+
+  const runtimes = await response.json();
+  runtimeCatalogCache = { endpoint: runtimeConfig.endpoint, runtimes };
+  return runtimes;
+}
+
+function getRuntimeMatches(runtimes, runtimeLanguage) {
+  if (!Array.isArray(runtimes)) {
+    return [];
+  }
+  const normalized = String(runtimeLanguage || "").toLowerCase();
+  return runtimes.filter((item) => {
+    const language = String(item.language || "").toLowerCase();
+    const aliases = Array.isArray(item.aliases) ? item.aliases.map((alias) => String(alias).toLowerCase()) : [];
+    return language === normalized || aliases.includes(normalized);
+  });
+}
+
+
+
+async function executeRemote(runtime, code) {
+  const runtimeConfig = getRuntimeConfig();
+  const headers = { "Content-Type": "application/json", ...runtimeConfig.headers };
+  const runtimeCatalog = await getRuntimeCatalog(runtimeConfig, headers);
+  const runtimeMatches = getRuntimeMatches(runtimeCatalog, runtime.language);
+
+  if (runtimeCatalog && !runtimeMatches.length) {
+    const supportedList = runtimeCatalog
+      .slice(0, 12)
+      .map((item) => item.language)
+      .join(", ");
+    throw new Error(
+      `현재 런타임에서 ${runtime.language} 언어를 지원하지 않습니다.\n지원 예시: ${supportedList}${runtimeCatalog.length > 12 ? ", ..." : ""}`
+    );
+  }
+
+  let targetVersion = runtime.version || "*";
+  if (runtimeMatches.length && targetVersion !== "*") {
+    const hasRequestedVersion = runtimeMatches.some((item) => String(item.version) === String(targetVersion));
+    if (!hasRequestedVersion) {
+      targetVersion = runtimeMatches[0].version;
+    }
+  }
+
+  const response = await fetch(runtimeConfig.endpoint, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      language: runtime.language,
+      version: targetVersion,
+      files: [{ content: code }],
+      stdin: "",
+      args: [],
+      compile_timeout: defaultRuntimeTimeoutMs,
+      run_timeout: defaultRuntimeTimeoutMs,
+    }),
+  });
+
+  if (!response.ok) {
+    if (response.status === 401 && runtimeConfig.endpoint.includes("emkc.org")) {
+      throw new Error(
+        "공개 Piston API가 화이트리스트 전용으로 전환되었습니다.\n실행 결과 패널의 '런타임 설정'에서 자체 엔드포인트와 헤더를 저장해 주세요."
+      );
+    }
+
+    let details = "";
+    try {
+      const errorJson = await response.json();
+      details = errorJson.message || errorJson.error || JSON.stringify(errorJson);
+    } catch {
+      try {
+        details = await response.text();
+      } catch {
+        details = "";
+      }
+    }
+
+    if (details) {
+      throw new Error(`Runtime request failed (${response.status})\n${details}`);
+    }
+    throw new Error(`Runtime request failed (${response.status})`);
+  }
+
+  return response.json();
+}
+
+function initHomePage() {
+  const summary = document.getElementById("homeProjectSummary");
+  if (!summary) {
+    return;
+  }
+
+  const currentUser = getCurrentUser();
+  const projects = getProjects().sort((left, right) => right.updatedAt - left.updatedAt);
+  if (!projects.length) {
+    summary.innerHTML = `
+      <strong>${currentLocale === "ko" ? "개인 홈" : "Personal Home"}</strong>
+      <p>${currentUser ? `@${escapeHtml(currentUser)}` : currentLocale === "ko" ? "게스트" : "Guest"}</p>
+      <p>${content[currentLocale].homeEmpty}</p>
+      <div class="home-persona-grid">
+        <div class="persona-chip">${currentLocale === "ko" ? "오늘의 추천: JavaScript 미니 프로젝트" : "Today: JavaScript mini project"}</div>
+        <div class="persona-chip">${currentLocale === "ko" ? "AI 도우미에서 설계 플랜 먼저 작성" : "Draft architecture in AI Assistant first"}</div>
+        <div class="persona-chip">${currentLocale === "ko" ? "에러 해결에서 파일/라인 기반 수정 추천 사용" : "Use file-line fix recommendations in Errors"}</div>
+      </div>`;
+    return;
+  }
+
+  const latest = projects[0];
+  const dominantLanguage =
+    projects
+      .map((project) => project.language)
+      .sort((a, b, arr) => arr.filter((v) => v === a).length - arr.filter((v) => v === b).length)
+      .pop() || latest.language;
+  summary.innerHTML = `
+    <strong>${currentLocale === "ko" ? "개인 홈" : "Personal Home"}</strong>
+    <p>${currentUser ? `@${escapeHtml(currentUser)}` : currentLocale === "ko" ? "게스트" : "Guest"}</p>
+    <strong>최근 프로젝트</strong>
+    <p>${escapeHtml(latest.name)}</p>
+    <strong>언어</strong>
+    <p>${escapeHtml(languageSamples[latest.language]?.label || latest.language)}</p>
+    <strong>${currentLocale === "ko" ? "자주 쓰는 언어" : "Frequent Language"}</strong>
+    <p>${escapeHtml(languageSamples[dominantLanguage]?.label || dominantLanguage)}</p>
+    <strong>마지막 저장</strong>
+    <p>${formatTimestamp(latest.updatedAt)}</p>
+    <div class="home-persona-grid">
+      <div class="persona-chip">${currentLocale === "ko" ? "추천: 최근 프로젝트를 리팩터링" : "Suggested: refactor latest project"}</div>
+      <div class="persona-chip">${currentLocale === "ko" ? "터미널에서 runtimes로 실행 환경 점검" : "Check runtimes from terminal"}</div>
+      <div class="persona-chip">${currentLocale === "ko" ? "커뮤니티에 오늘 코드 공유하기" : "Share today's code in community"}</div>
+    </div>
+    <a class="primary-button small" href="editor.html">이어서 작업</a>`;
+}
+
+function initEditorPage() {
+  const languageSelect = document.getElementById("languageSelect");
+  const codeEditor = document.getElementById("codeEditor");
+  if (!languageSelect || !codeEditor) {
+    return;
+  }
+
+  const projectName = document.getElementById("projectName");
+  const lineNumbers = document.getElementById("lineNumbers");
+  const outputConsole = document.getElementById("outputConsole");
+  const statusBadge = document.getElementById("statusBadge");
+  const saveMeta = document.getElementById("saveMeta");
+  const projectCount = document.getElementById("projectCount");
+  const projectList = document.getElementById("projectList");
+  const previewFrame = document.getElementById("previewFrame");
+  const circuitEditor = document.getElementById("circuitEditor");
+  const circuitWorkspace = document.getElementById("circuitWorkspace");
+  const circuitWireLayer = document.getElementById("circuitWireLayer");
+  const circuitNodeLayer = document.getElementById("circuitNodeLayer");
+  const circuitStatus = document.getElementById("circuitStatus");
+  const addComponentButton = document.getElementById("addComponentButton");
+  const connectComponentButton = document.getElementById("connectComponentButton");
+  const resetCircuitButton = document.getElementById("resetCircuitButton");
+  const applyCircuitNodeButton = document.getElementById("applyCircuitNodeButton");
+  const deleteCircuitNodeButton = document.getElementById("deleteCircuitNodeButton");
+  const circuitNameInput = document.getElementById("circuitNameInput");
+  const circuitPinInput = document.getElementById("circuitPinInput");
+  const circuitXInput = document.getElementById("circuitXInput");
+  const circuitYInput = document.getElementById("circuitYInput");
+  const toggleRuntimeConfigButton = document.getElementById("toggleRuntimeConfigButton");
+  const runtimeConfigBody = document.getElementById("runtimeConfigBody");
+  const runtimeEndpointInput = document.getElementById("runtimeEndpointInput");
+  const runtimeHeadersInput = document.getElementById("runtimeHeadersInput");
+  const saveRuntimeConfigButton = document.getElementById("saveRuntimeConfigButton");
+  const resetRuntimeConfigButton = document.getElementById("resetRuntimeConfigButton");
+  const runtimeConfigStatus = document.getElementById("runtimeConfigStatus");
+  const importFileInput = document.getElementById("importFileInput");
+  const runButton = document.getElementById("runButton");
+  const saveButton = document.getElementById("saveButton");
+  const newProjectButton = document.getElementById("newProjectButton");
+  const downloadButton = document.getElementById("downloadButton");
+  const runModePill = document.getElementById("runModePill");
+  const terminalConsole = document.getElementById("terminalConsole");
+  const terminalInput = document.getElementById("terminalInput");
+  const terminalRunButton = document.getElementById("terminalRunButton");
+  const terminalClearButton = document.getElementById("terminalClearButton");
+  const guiHintPanel = document.getElementById("guiHintPanel");
+  const circuitComponentType = document.getElementById("circuitComponentType");
+  const removeWireButton = document.getElementById("removeWireButton");
+
+  let circuitStateMap = getStoredCircuitStates();
+  let circuitModel = null;
+  let selectedNodeId = null;
+  let selectedWireIndex = null;
+  let connectFromNodeId = null;
+  let dragState = null;
+
+  function isCircuitLanguage(languageKey) {
+    return languageSamples[languageKey]?.mode === "circuit";
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function snapToGrid(value) {
+    const grid = 12;
+    return Math.round(value / grid) * grid;
+  }
+
+  function updateGuiHint(languageKey, sourceCode) {
+    if (!guiHintPanel) {
+      return;
+    }
+
+    if (languageKey !== "python") {
+      guiHintPanel.textContent = tr("guiHintDefault");
+      return;
+    }
+
+    const detected = /(pygame|tkinter|pyqt|kivy|wx)/i.test(sourceCode || "");
+    guiHintPanel.textContent = detected ? tr("guiHintDetected") : tr("guiHintDefault");
+  }
+
+  function updateRuntimeStatusLine() {
+    if (!runtimeConfigStatus) {
+      return;
+    }
+    const runtimeConfig = getRuntimeConfig();
+    if (runtimeConfig.endpoint === defaultRuntimeEndpoint) {
+      runtimeConfigStatus.textContent = tr("runtimeDefaultStatus");
+      return;
+    }
+    runtimeConfigStatus.textContent = `${tr("runtimeUsingStatus")}: ${runtimeConfig.endpoint}`;
+  }
+
+  function fillRuntimeConfigForm() {
+    if (!runtimeEndpointInput || !runtimeHeadersInput) {
+      return;
+    }
+    const runtimeConfig = getRuntimeConfig();
+    runtimeEndpointInput.value = runtimeConfig.endpoint;
+    runtimeHeadersInput.value = JSON.stringify(runtimeConfig.headers || {}, null, 2);
+    updateRuntimeStatusLine();
+  }
+
+  function parseRuntimeHeadersInput() {
+    const raw = runtimeHeadersInput?.value.trim() || "{}";
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+      throw new Error(tr("runtimeHeadersJsonError"));
+    }
+    return parsed;
+  }
+
+  async function refreshLanguageAvailability() {
+    const runtimeConfig = getRuntimeConfig();
+    const headers = { "Content-Type": "application/json", ...runtimeConfig.headers };
+    const catalog = await getRuntimeCatalog(runtimeConfig, headers);
+    const supported = new Set();
+
+    if (Array.isArray(catalog)) {
+      catalog.forEach((item) => {
+        supported.add(String(item.language || "").toLowerCase());
+        if (Array.isArray(item.aliases)) {
+          item.aliases.forEach((alias) => supported.add(String(alias).toLowerCase()));
+        }
+      });
+    }
+
+    Array.from(languageSelect.options).forEach((option) => {
+      const languageKey = option.value;
+      const sample = languageSamples[languageKey];
+      option.disabled = false;
+      option.textContent = sample.label;
+
+      if (!sample.runner) {
+        return;
+      }
+
+      if (!supported.size) {
+        return;
+      }
+
+      const runnerLanguage = String(sample.runner.language || "").toLowerCase();
+      const isSupported = supported.has(runnerLanguage);
+      if (!isSupported) {
+        option.disabled = true;
+        option.textContent = `${sample.label} (${tr("unsupportedTag")})`;
+      }
+    });
+
+    if (languageSelect.selectedOptions[0]?.disabled) {
+      const fallback = Array.from(languageSelect.options).find((option) => !option.disabled);
+      if (fallback) {
+        languageSelect.value = fallback.value;
+      }
+    }
+  }
+
+  function persistCircuitModel(languageKey) {
+    if (!isCircuitLanguage(languageKey) || !circuitModel) {
+      return;
+    }
+    circuitStateMap[languageKey] = circuitModel;
+    setStoredCircuitStates(circuitStateMap);
+  }
+
+  function getCircuitModel(languageKey, forceReset = false) {
+    if (!isCircuitLanguage(languageKey)) {
+      return null;
+    }
+    if (!forceReset && circuitStateMap[languageKey]) {
+      return JSON.parse(JSON.stringify(circuitStateMap[languageKey]));
+    }
+    return getDefaultCircuitModel(languageKey);
+  }
+
+  function getNodeById(nodeId) {
+    return circuitModel?.nodes.find((node) => node.id === nodeId) || null;
+  }
+
+  function setCircuitStatus(message) {
+    if (circuitStatus) {
+      circuitStatus.textContent = message;
+    }
+  }
+
+  function toggleCircuitEnabled(enabled) {
+    if (!circuitEditor) {
+      return;
+    }
+    circuitEditor.classList.toggle("is-disabled", !enabled);
+    const controls = [
+      addComponentButton,
+      connectComponentButton,
+      removeWireButton,
+      resetCircuitButton,
+      applyCircuitNodeButton,
+      deleteCircuitNodeButton,
+      circuitComponentType,
+      circuitNameInput,
+      circuitPinInput,
+      circuitXInput,
+      circuitYInput,
+    ];
+    controls.forEach((control) => {
+      if (control) {
+        control.disabled = !enabled;
+      }
+    });
+  }
+
+  function renderCircuitForm() {
+    const node = getNodeById(selectedNodeId);
+    if (!node) {
+      if (circuitNameInput) {
+        circuitNameInput.value = "";
+      }
+      if (circuitPinInput) {
+        circuitPinInput.value = "";
+      }
+      if (circuitXInput) {
+        circuitXInput.value = "";
+      }
+      if (circuitYInput) {
+        circuitYInput.value = "";
+      }
+      if (circuitComponentType) {
+        circuitComponentType.value = "sensor";
+      }
+      return;
+    }
+
+    circuitNameInput.value = node.name;
+    circuitPinInput.value = node.pin;
+    circuitXInput.value = String(Math.round(node.x));
+    circuitYInput.value = String(Math.round(node.y));
+    if (circuitComponentType) {
+      circuitComponentType.value = node.type || "sensor";
+    }
+  }
+
+  function renderCircuitEditor() {
+    if (!circuitWireLayer || !circuitNodeLayer) {
+      return;
+    }
+
+    circuitWireLayer.innerHTML = "";
+    circuitNodeLayer.innerHTML = "";
+    if (!circuitModel) {
+      return;
+    }
+
+    const nodeById = new Map(circuitModel.nodes.map((node) => [node.id, node]));
+    circuitModel.wires.forEach((wire, wireIndex) => {
+      const from = nodeById.get(wire.from);
+      const to = nodeById.get(wire.to);
+      if (!from || !to) {
+        return;
+      }
+      const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      line.classList.add("circuit-wire");
+      if (wireIndex === selectedWireIndex) {
+        line.classList.add("is-selected");
+      }
+      line.setAttribute("x1", String(from.x + 66));
+      line.setAttribute("y1", String(from.y + 24));
+      line.setAttribute("x2", String(to.x + 66));
+      line.setAttribute("y2", String(to.y + 24));
+      line.setAttribute("data-wire-index", String(wireIndex));
+      line.setAttribute("stroke", "#2563eb");
+      line.setAttribute("stroke-width", "3");
+      line.setAttribute("stroke-linecap", "round");
+      circuitWireLayer.appendChild(line);
+    });
+
+    circuitModel.nodes.forEach((node) => {
+      const nodeElement = document.createElement("div");
+      nodeElement.className = "circuit-node";
+      nodeElement.classList.add(node.type || "module");
+      if (node.id === selectedNodeId) {
+        nodeElement.classList.add("is-selected");
+      }
+      nodeElement.style.left = `${node.x}px`;
+      nodeElement.style.top = `${node.y}px`;
+      nodeElement.dataset.nodeId = node.id;
+
+      const svg = createComponentSVG(node);
+      nodeElement.appendChild(svg);
+
+      const label = document.createElement("div");
+      label.className = "circuit-node-label";
+      label.innerHTML = `<span class="circuit-node-name">${escapeHtml(node.name)}</span><span class="circuit-node-pin">${escapeHtml(node.pin)}</span>`;
+      nodeElement.appendChild(label);
+
+      circuitNodeLayer.appendChild(nodeElement);
+    });
+  }
+
+  function createComponentSVG(node) {
+    const type = node.type || "module";
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 132 48");
+    svg.setAttribute("width", "132");
+    svg.setAttribute("height", "48");
+    svg.setAttribute("class", "circuit-component-svg");
+
+    if (type === "uno" || type === "module") {
+      const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+      rect.setAttribute("x", "4");
+      rect.setAttribute("y", "4");
+      rect.setAttribute("width", "124");
+      rect.setAttribute("height", "40");
+      rect.setAttribute("fill", type === "uno" ? "#4b7a91" : "#8b8b8b");
+      rect.setAttribute("stroke", type === "uno" ? "#2d4d63" : "#555");
+      rect.setAttribute("stroke-width", "2");
+      rect.setAttribute("rx", "4");
+      svg.appendChild(rect);
+
+      for (let i = 0; i < 8; i++) {
+        const hole = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        hole.setAttribute("cx", String(12 + i * 14));
+        hole.setAttribute("cy", "12");
+        hole.setAttribute("r", "3");
+        hole.setAttribute("fill", "#222");
+        svg.appendChild(hole);
+
+        const hole2 = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        hole2.setAttribute("cx", String(12 + i * 14));
+        hole2.setAttribute("cy", "36");
+        hole2.setAttribute("r", "3");
+        hole2.setAttribute("fill", "#222");
+        svg.appendChild(hole2);
+      }
+    } else if (type === "led") {
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", "66");
+      circle.setAttribute("cy", "20");
+      circle.setAttribute("r", "12");
+      circle.setAttribute("fill", "#fbbf24");
+      circle.setAttribute("stroke", "#f59e0b");
+      circle.setAttribute("stroke-width", "2");
+      svg.appendChild(circle);
+
+      const leg1 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      leg1.setAttribute("x1", "56");
+      leg1.setAttribute("y1", "32");
+      leg1.setAttribute("x2", "56");
+      leg1.setAttribute("y2", "44");
+      leg1.setAttribute("stroke", "#999");
+      leg1.setAttribute("stroke-width", "2");
+      svg.appendChild(leg1);
+
+      const leg2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      leg2.setAttribute("x1", "76");
+      leg2.setAttribute("y1", "32");
+      leg2.setAttribute("x2", "76");
+      leg2.setAttribute("y2", "44");
+      leg2.setAttribute("stroke", "#999");
+      leg2.setAttribute("stroke-width", "2");
+      svg.appendChild(leg2);
+    } else if (type === "resistor") {
+      const zigzag = document.createElementNS("http://www.w3.org/2000/svg", "polyline");
+      zigzag.setAttribute("points", "24,24 32,16 40,32 48,16 56,32 64,16 72,32 80,16 88,32 96,16 104,24");
+      zigzag.setAttribute("fill", "none");
+      zigzag.setAttribute("stroke", "#ef4444");
+      zigzag.setAttribute("stroke-width", "3");
+      zigzag.setAttribute("stroke-linecap", "round");
+      zigzag.setAttribute("stroke-linejoin", "round");
+      svg.appendChild(zigzag);
+    } else if (type === "button") {
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", "66");
+      circle.setAttribute("cy", "24");
+      circle.setAttribute("r", "14");
+      circle.setAttribute("fill", "#a855f7");
+      circle.setAttribute("stroke", "#9333ea");
+      circle.setAttribute("stroke-width", "2");
+      svg.appendChild(circle);
+
+      const inner = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      inner.setAttribute("cx", "66");
+      inner.setAttribute("cy", "24");
+      inner.setAttribute("r", "8");
+      inner.setAttribute("fill", "#e9d5ff");
+      svg.appendChild(inner);
+    } else if (type === "sensor") {
+      const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+      circle.setAttribute("cx", "66");
+      circle.setAttribute("cy", "20");
+      circle.setAttribute("r", "10");
+      circle.setAttribute("fill", "#3b82f6");
+      circle.setAttribute("stroke", "#1e40af");
+      circle.setAttribute("stroke-width", "2");
+      svg.appendChild(circle);
+
+      const antenna = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      antenna.setAttribute("x1", "66");
+      antenna.setAttribute("y1", "8");
+      antenna.setAttribute("x2", "66");
+      antenna.setAttribute("y2", "-4");
+      antenna.setAttribute("stroke", "#1e40af");
+      antenna.setAttribute("stroke-width", "2");
+      svg.appendChild(antenna);
+
+      const antenna2 = document.createElementNS("http://www.w3.org/2000/svg", "line");
+      antenna2.setAttribute("x1", "66");
+      antenna2.setAttribute("y1", "-4");
+      antenna2.setAttribute("x2", "72");
+      antenna2.setAttribute("y2", "-8");
+      antenna2.setAttribute("stroke", "#1e40af");
+      antenna2.setAttribute("stroke-width", "2");
+      svg.appendChild(antenna2);
+    }
+
+    return svg;
+  }
+
+  function selectCircuitNode(nodeId) {
+    selectedNodeId = nodeId;
+    selectedWireIndex = null;
+    connectFromNodeId = null;
+    renderCircuitForm();
+    renderCircuitEditor();
+    if (selectedNodeId) {
+      setCircuitStatus("부품 선택됨. 이름/핀/X/Y를 수정하고 적용할 수 있습니다.");
+    }
+  }
+
+  function loadCircuitForLanguage(languageKey, forceReset = false) {
+    if (!isCircuitLanguage(languageKey)) {
+      circuitModel = null;
+      selectedNodeId = null;
+      selectedWireIndex = null;
+      connectFromNodeId = null;
+      toggleCircuitEnabled(false);
+      renderCircuitForm();
+      renderCircuitEditor();
+      setCircuitStatus("Arduino/ESP-IDF를 선택하면 회로 편집기가 활성화됩니다.");
+      return;
+    }
+
+    circuitModel = getCircuitModel(languageKey, forceReset);
+    selectedNodeId = circuitModel.nodes[0]?.id || null;
+    selectedWireIndex = null;
+    connectFromNodeId = null;
+    toggleCircuitEnabled(true);
+    renderCircuitForm();
+    renderCircuitEditor();
+    persistCircuitModel(languageKey);
+    setCircuitStatus("드래그로 배치 변경, 연결 생성 버튼으로 배선 추가가 가능합니다.");
+  }
+
+  function updateLineNumbers() {
+    const lines = codeEditor.value.split("\n").length;
+    lineNumbers.textContent = Array.from({ length: lines }, (_, index) => index + 1).join("\n");
+  }
+
+  function updateRuntimeMode(languageKey) {
+    if (!runModePill) {
+      return;
+    }
+    const mode = languageSamples[languageKey].mode || "cloud";
+    if (mode === "preview") {
+      runModePill.textContent = "HTML Preview";
+    } else if (mode === "circuit") {
+      runModePill.textContent = "Circuit + Cloud";
+    } else {
+      runModePill.textContent = "Cloud Runtime";
+    }
+  }
+
+  function renderProjectList() {
+    const projects = getProjects().sort((left, right) => right.updatedAt - left.updatedAt);
+    projectCount.textContent = `${projects.length}개`;
+
+    if (!projects.length) {
+      projectList.innerHTML = `<li><span>${content[currentLocale].libraryEmpty}</span></li>`;
+      return;
+    }
+
+    projectList.innerHTML = projects
+      .map(
+        (project) => `
+          <li>
+            <div>
+              <strong>${escapeHtml(project.name)}</strong>
+              <small>${escapeHtml(languageSamples[project.language]?.label || project.language)} · ${formatTimestamp(project.updatedAt)}</small>
+            </div>
+            <button type="button" data-load-project="${escapeHtml(project.name)}">열기</button>
+          </li>`
+      )
+      .join("");
+  }
+
+  function loadSample(languageKey, forceProjectName = false) {
+    const sample = languageSamples[languageKey];
+    codeEditor.value = sample.code;
+    if (forceProjectName || !projectName.value.trim()) {
+      projectName.value = `my-${languageKey}-project`;
+    }
+    updateLineNumbers();
+    updateRuntimeMode(languageKey);
+    statusBadge.textContent = content[currentLocale].runReady;
+    outputConsole.textContent = content[currentLocale].outputReady;
+    resetPreview(previewFrame);
+    updateGuiHint(languageKey, codeEditor.value);
+    loadCircuitForLanguage(languageKey);
+  }
+
+  function saveProject() {
+    const safeName = sanitizeName(projectName.value);
+    if (!safeName) {
+      statusBadge.textContent = content[currentLocale].runError;
+      outputConsole.textContent = content[currentLocale].saveEmpty;
+      return;
+    }
+
+    projectName.value = safeName;
+    const projects = getProjects();
+    const now = Date.now();
+    const project = { name: safeName, language: languageSelect.value, code: codeEditor.value, updatedAt: now };
+    const existingIndex = projects.findIndex((item) => item.name === safeName);
+    if (existingIndex >= 0) {
+      projects[existingIndex] = project;
+    } else {
+      projects.push(project);
+    }
+
+    setProjects(projects);
+    localStorage.setItem(lastProjectKey, safeName);
+    saveMeta.textContent = `${safeName} · ${formatTimestamp(now)}`;
+    statusBadge.textContent = content[currentLocale].runSaved;
+    outputConsole.textContent = `${content[currentLocale].runSaved}\n\n${safeName} 프로젝트가 브라우저 로컬 저장소에 보관되었습니다.`;
+    renderProjectList();
+  }
+
+  function loadProjectByName(name) {
+    const project = getProjects().find((item) => item.name === name);
+    if (!project) {
+      return;
+    }
+
+    projectName.value = project.name;
+    languageSelect.value = project.language;
+    codeEditor.value = project.code;
+    updateLineNumbers();
+    updateRuntimeMode(project.language);
+    saveMeta.textContent = `${project.name} · ${formatTimestamp(project.updatedAt)}`;
+    statusBadge.textContent = content[currentLocale].runReady;
+    outputConsole.textContent = `${project.name} 프로젝트를 불러왔습니다.`;
+    resetPreview(previewFrame);
+    loadCircuitForLanguage(project.language);
+    localStorage.setItem(lastProjectKey, project.name);
+  }
+
+  async function runCurrentCode() {
+    const languageKey = languageSelect.value;
+    const code = codeEditor.value;
+    const sample = languageSamples[languageKey];
+    updateGuiHint(languageKey, code);
+
+    if (!canRunNow()) {
+      statusBadge.textContent = content[currentLocale].runError;
+      outputConsole.textContent = tr("runTooFast");
+      return;
+    }
+
+    if (sample.mode === "preview") {
+      previewFrame.srcdoc = code;
+      outputConsole.textContent = tr("htmlPreviewRendered");
+      statusBadge.textContent = content[currentLocale].runDone;
+      return;
+    }
+
+    if (sample.mode === "circuit") {
+      loadCircuitForLanguage(languageKey);
+    }
+
+    if (!sample.runner) {
+      outputConsole.textContent = tr("runtimeNotPrepared");
+      statusBadge.textContent = content[currentLocale].runError;
+      return;
+    }
+
+    statusBadge.textContent = "Running...";
+    try {
+      const result = await executeRemote(sample.runner, code);
+      const compileOutput = result.compile?.output || "";
+      const runOutput = result.run?.output || "";
+      const merged = [compileOutput.trim(), runOutput.trim()].filter(Boolean).join("\n\n");
+      const timedOut = String(result.run?.signal || "").toUpperCase() === "TO";
+      outputConsole.textContent = timedOut
+        ? `${merged || tr("emptyRunResult")}\n\n${
+            currentLocale === "ko"
+              ? "실행 시간 제한(TO)에 도달했습니다. 런타임 제한을 늘리거나 코드를 단순화해 보세요."
+              : "Execution reached timeout (TO). Increase runtime limits or simplify the code."
+          }`
+        : merged || tr("emptyRunResult");
+      statusBadge.textContent = content[currentLocale].runDone;
+    } catch (error) {
+      statusBadge.textContent = content[currentLocale].runError;
+      outputConsole.textContent = `${tr("runFailedTitle")}\n\n${error.message}`;
+      if (String(error.message).includes("화이트리스트")) {
+        runtimeConfigBody?.classList.remove("is-hidden");
+      }
+    }
+  }
+
+  function applyPendingSnippet() {
+    const params = new URLSearchParams(window.location.search);
+    const snippetIndex = params.get("snippet");
+    let snippet = null;
+
+    if (snippetIndex !== null) {
+      snippet = snippets[Number(snippetIndex)] || null;
+    }
+    if (!snippet) {
+      const stored = localStorage.getItem(pendingSnippetKey);
+      snippet = stored ? JSON.parse(stored) : null;
+    }
+    if (!snippet) {
+      return false;
+    }
+
+    languageSelect.value = snippet.language;
+    codeEditor.value = snippet.code;
+    projectName.value = snippet.title.toLowerCase().replace(/\s+/g, "-");
+    updateLineNumbers();
+    updateRuntimeMode(snippet.language);
+    outputConsole.textContent = `${snippet.title} 예제를 에디터로 불러왔습니다.`;
+    statusBadge.textContent = content[currentLocale].runReady;
+    loadCircuitForLanguage(snippet.language);
+    updateGuiHint(snippet.language, codeEditor.value);
+    resetPreview(previewFrame);
+    localStorage.removeItem(pendingSnippetKey);
+    return true;
+  }
+
+  function downloadCurrentProject() {
+    const name = sanitizeName(projectName.value) || "vpr-project";
+    const extension = languageSamples[languageSelect.value].extension;
+    const blob = new Blob([codeEditor.value], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${name}.${extension}`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  }
+
+  function appendTerminal(text) {
+    if (!terminalConsole) {
+      return;
+    }
+    const previous = terminalConsole.textContent || "";
+    terminalConsole.textContent = previous ? `${previous}\n${text}` : text;
+    terminalConsole.scrollTop = terminalConsole.scrollHeight;
+  }
+
+  async function runTerminalCommand(rawCommand) {
+    const command = (rawCommand || "").trim();
+    if (!command) {
+      return;
+    }
+
+    appendTerminal(`$ ${command}`);
+
+    if (command === "clear") {
+      terminalConsole.textContent = tr("terminalReady");
+      return;
+    }
+
+    if (command === "help") {
+      const help = currentLocale === "ko" 
+        ? "사용 가능한 명령:\n- help: 이 도움말\n- clear: 터미널 지우기\n- runtimes: 사용 가능한 런타임 목록\n- run: 에디터 코드 실행\n- npm install <pkg>: npm 패키지 설치\n- npm list: 설치된 npm 패키지 목록\n- pip install <pkg>: Python 패키지 설치\n- pip list: 설치된 Python 패키지 목록\n- pip show <pkg>: Python 패키지 정보\n- python <code>: Python 코드 실행\n- python --version: Python 버전 확인\n- node <code>: Node.js 코드 실행\n- node --version: Node.js 버전 확인\n- git status: git 상태 확인\n- bash <cmd>: bash 명령 실행 (pwd, ls, curl 등)"
+        : "Available commands:\n- help: show this help\n- clear: clear terminal\n- runtimes: list available runtimes\n- run: run editor code\n- npm install <pkg>: install npm package\n- npm list: list npm packages\n- pip install <pkg>: install python package\n- pip list: list python packages\n- pip show <pkg>: show package info\n- python <code>: execute python code\n- python --version: check python version\n- node <code>: execute node.js code\n- node --version: check node version\n- git status: check git status\n- bash <cmd>: run bash command (pwd, ls, curl, etc)";\n      appendTerminal(help);
+      return;
+    }
+
+    if (command === "run") {
+      await runCurrentCode();
+      appendTerminal(currentLocale === "ko" ? "현재 에디터 코드 실행 요청 완료" : "Current editor code execution requested");
+      return;
+    }
+
+    if (command === "runtimes") {
+      const runtimeConfig = getRuntimeConfig();
+      const headers = { "Content-Type": "application/json", ...runtimeConfig.headers };
+      try {
+        const catalog = await getRuntimeCatalog(runtimeConfig, headers);
+        if (!Array.isArray(catalog) || !catalog.length) {
+          appendTerminal(currentLocale === "ko" ? "조회 가능한 런타임이 없습니다." : "No runtimes available.");
+          return;
+        }
+        const compact = catalog
+          .slice(0, 18)
+          .map((item) => `${item.language}@${item.version}`)
+          .join("\n");
+        appendTerminal(compact);
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase().startsWith("pip install ")) {
+      const pkg = command.slice("pip install ".length).trim();
+      if (!pkg) {
+        appendTerminal(currentLocale === "ko" ? "설치할 패키지를 입력하세요." : "Enter a package name to install.");
+        return;
+      }
+      const pipCode = [
+        "import subprocess, sys",
+        `pkg = ${JSON.stringify(pkg)}`,
+        "res = subprocess.run([sys.executable, '-m', 'pip', 'install', pkg], capture_output=True, text=True)",
+        "print(res.stdout)",
+        "print(res.stderr)",
+      ].join("\n");
+      try {
+        const result = await executeRemote(languageSamples.python.runner, pipCode);
+        const merged = [result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n");
+        appendTerminal(
+          `${currentLocale === "ko" ? "pip install 결과" : "pip install output"}\n${merged || "(empty)"}\n${
+            currentLocale === "ko"
+              ? "참고: 샌드박스 런타임은 영구 저장이 아닐 수 있습니다."
+              : "Note: Sandbox runtime may not persist packages permanently."
+          }`
+        );
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase() === "pip list") {
+      try {
+        const result = await executeRemote(languageSamples.python.runner, "import subprocess\nsubprocess.run(['pip', 'list'])");
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase().startsWith("pip show ")) {
+      const pkg = command.slice("pip show ".length).trim();
+      if (!pkg) {
+        appendTerminal(currentLocale === "ko" ? "패키지명을 입력하세요." : "Enter package name.");
+        return;
+      }
+      try {
+        const result = await executeRemote(languageSamples.python.runner, `import subprocess\nsubprocess.run(['pip', 'show', '${pkg}'])`);
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase() === "npm list") {
+      try {
+        const result = await executeRemote(languageSamples.javascript.runner, "const child_process = require('child_process');\nchild_process.exec('npm list', (err, stdout, stderr) => { console.log(stdout); if (stderr) console.log(stderr); });");
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase().startsWith("npm install ")) {
+      const pkg = command.slice("npm install ".length).trim();
+      if (!pkg) {
+        appendTerminal(currentLocale === "ko" ? "패키지명을 입력하세요." : "Enter package name.");
+        return;
+      }
+      try {
+        const result = await executeRemote(languageSamples.javascript.runner, `const child_process = require('child_process');\nchild_process.exec('npm install ${pkg}', (err, stdout, stderr) => { console.log(stdout); if (stderr) console.log(stderr); });`);
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase().startsWith("python ")) {
+      const pythonCode = command.slice(7).trim();
+      if (!pythonCode) {
+        appendTerminal(currentLocale === "ko" ? "python 뒤에 실행 코드를 입력하세요." : "Enter Python code after python.");
+        return;
+      }
+      try {
+        const result = await executeRemote(languageSamples.python.runner, pythonCode);
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || tr("emptyRunResult"));
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase().startsWith("node ")) {
+      const nodeCode = command.slice(5).trim();
+      if (!nodeCode) {
+        appendTerminal(currentLocale === "ko" ? "node 뒤에 실행 코드를 입력하세요." : "Enter Node.js code after node.");
+        return;
+      }
+      try {
+        const result = await executeRemote(languageSamples.javascript.runner, nodeCode);
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || tr("emptyRunResult"));
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase() === "python --version") {
+      try {
+        const result = await executeRemote(languageSamples.python.runner, "import sys\nprint(sys.version)");
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase() === "node --version") {
+      try {
+        const result = await executeRemote(languageSamples.javascript.runner, "console.log(process.version)");
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase() === "git status") {
+      try {
+        const result = await executeRemote({ language: "bash", version: "5.2.0" }, "git status 2>&1 || echo 'git command not available or not in git repo'");
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    if (command.toLowerCase() === "pwd" || command.toLowerCase() === "ls") {
+      try {
+        const result = await executeRemote({ language: "bash", version: "5.2.0" }, command);
+        appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || "(empty)");
+      } catch (error) {
+        appendTerminal(String(error.message || error));
+      }
+      return;
+    }
+
+    const runtimeConfig = getRuntimeConfig();
+    const headers = { "Content-Type": "application/json", ...runtimeConfig.headers };
+    try {
+      const catalog = await getRuntimeCatalog(runtimeConfig, headers);
+      const bashRuntime = (catalog || []).find((item) => String(item.language || "").toLowerCase() === "bash");
+      if (!bashRuntime) {
+        appendTerminal(
+          currentLocale === "ko"
+            ? "bash 런타임이 없어 이 명령을 실행할 수 없습니다. help/runtimes/run/pip 명령을 사용해 주세요."
+            : "bash runtime is unavailable. Use help/runtimes/run/pip commands instead."
+        );
+        return;
+      }
+      const shellCommand = command.toLowerCase().startsWith("bash ") ? command.slice(5).trim() : command;
+      if (!shellCommand) {
+        appendTerminal(currentLocale === "ko" ? "bash 뒤에 명령을 입력하세요." : "Enter a command after bash.");
+        return;
+      }
+      const result = await executeRemote({ language: "bash", version: bashRuntime.version }, shellCommand);
+      appendTerminal([result.compile?.output || "", result.run?.output || ""].filter(Boolean).join("\n") || tr("emptyRunResult"));
+    } catch (error) {
+      appendTerminal(String(error.message || error));
+    }
+  }
+
+  populateLanguageSelect(languageSelect);
+  renderProjectList();
+  fillRuntimeConfigForm();
+  refreshLanguageAvailability().catch(() => {
+    outputConsole.textContent = `${content[currentLocale].outputReady}\n\n${tr("runtimeUnsupportedMessage")}`;
+  });
+  loadSample("javascript", true);
+  if (terminalConsole) {
+    terminalConsole.textContent = tr("terminalReady");
+  }
+  updateGuiHint(languageSelect.value, codeEditor.value);
+
+  const lastProjectName = localStorage.getItem(lastProjectKey);
+  if (lastProjectName) {
+    loadProjectByName(lastProjectName);
+  } else {
+    saveMeta.textContent = content[currentLocale].saveMetaEmpty;
+  }
+  applyPendingSnippet();
+
+  languageSelect.addEventListener("change", (event) => loadSample(event.target.value, true));
+  codeEditor.addEventListener("input", () => {
+    updateLineNumbers();
+    updateGuiHint(languageSelect.value, codeEditor.value);
+  });
+  runButton.addEventListener("click", runCurrentCode);
+  saveButton.addEventListener("click", saveProject);
+  newProjectButton.addEventListener("click", () => loadSample(languageSelect.value, true));
+  downloadButton.addEventListener("click", downloadCurrentProject);
+  terminalRunButton?.addEventListener("click", async () => {
+    const command = terminalInput?.value || "";
+    await runTerminalCommand(command);
+    if (terminalInput) {
+      terminalInput.value = "";
+    }
+  });
+  terminalClearButton?.addEventListener("click", () => {
+    if (terminalConsole) {
+      terminalConsole.textContent = tr("terminalReady");
+    }
+  });
+  terminalInput?.addEventListener("keydown", async (event) => {
+    if (event.key !== "Enter") {
+      return;
+    }
+    event.preventDefault();
+    const command = terminalInput.value;
+    await runTerminalCommand(command);
+    terminalInput.value = "";
+  });
+
+  projectList.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-load-project]");
+    if (!button) {
+      return;
+    }
+    loadProjectByName(button.dataset.loadProject);
+  });
+
+  importFileInput.addEventListener("change", async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    const text = await file.text();
+    codeEditor.value = text;
+    projectName.value = sanitizeName(file.name.replace(/\.[^.]+$/, ""));
+    updateLineNumbers();
+    statusBadge.textContent = content[currentLocale].runReady;
+    outputConsole.textContent = `${file.name} 파일을 편집기에 불러왔습니다.`;
+    resetPreview(previewFrame);
+    importFileInput.value = "";
+  });
+
+  toggleRuntimeConfigButton?.addEventListener("click", () => {
+    runtimeConfigBody?.classList.toggle("is-hidden");
+  });
+
+  saveRuntimeConfigButton?.addEventListener("click", () => {
+    try {
+      const endpoint = String(runtimeEndpointInput?.value || "").trim();
+      if (!/^https?:\/\//i.test(endpoint)) {
+        throw new Error(tr("runtimeEndpointError"));
+      }
+      const headers = parseRuntimeHeadersInput();
+      setRuntimeConfig({ endpoint, headers });
+      runtimeCatalogCache = { endpoint: "", runtimes: null };
+      fillRuntimeConfigForm();
+      refreshLanguageAvailability();
+      statusBadge.textContent = content[currentLocale].runSaved;
+      outputConsole.textContent = tr("runtimeSavedMessage");
+    } catch (error) {
+      statusBadge.textContent = content[currentLocale].runError;
+      outputConsole.textContent = `${tr("runtimeConfigErrorTitle")}\n\n${error.message}`;
+    }
+  });
+
+  resetRuntimeConfigButton?.addEventListener("click", () => {
+    setRuntimeConfig({ endpoint: defaultRuntimeEndpoint, headers: {} });
+    runtimeCatalogCache = { endpoint: "", runtimes: null };
+    fillRuntimeConfigForm();
+    refreshLanguageAvailability();
+    statusBadge.textContent = content[currentLocale].runReady;
+    outputConsole.textContent = tr("runtimeResetMessage");
+  });
+
+  applyCircuitNodeButton?.addEventListener("click", () => {
+    const node = getNodeById(selectedNodeId);
+    if (!node || !circuitWorkspace) {
+      setCircuitStatus("먼저 편집할 부품을 선택하세요.");
+      return;
+    }
+    const maxX = Math.max(0, circuitWorkspace.clientWidth - 132);
+    const maxY = Math.max(0, circuitWorkspace.clientHeight - 56);
+    node.name = (circuitNameInput?.value || node.name).trim().slice(0, 24) || node.name;
+    node.pin = (circuitPinInput?.value || node.pin).trim().slice(0, 24) || node.pin;
+    node.type = circuitComponentType?.value || node.type || "sensor";
+    node.x = clamp(snapToGrid(Number(circuitXInput?.value || node.x)), 0, maxX);
+    node.y = clamp(snapToGrid(Number(circuitYInput?.value || node.y)), 0, maxY);
+    persistCircuitModel(languageSelect.value);
+    renderCircuitForm();
+    renderCircuitEditor();
+    setCircuitStatus("부품 속성을 반영했습니다.");
+  });
+
+  addComponentButton?.addEventListener("click", () => {
+    if (!circuitModel || !circuitWorkspace) {
+      return;
+    }
+    const nextIndex = circuitModel.nodes.length + 1;
+    const maxX = Math.max(0, circuitWorkspace.clientWidth - 132);
+    const maxY = Math.max(0, circuitWorkspace.clientHeight - 56);
+    const node = {
+      id: `node-${Date.now()}`,
+      type: circuitComponentType?.value || "sensor",
+      name: `Component ${nextIndex}`,
+      pin: "PIN",
+      x: clamp(snapToGrid(40 + nextIndex * 24), 0, maxX),
+      y: clamp(snapToGrid(36 + nextIndex * 16), 0, maxY),
+    };
+    circuitModel.nodes.push(node);
+    selectedNodeId = node.id;
+    persistCircuitModel(languageSelect.value);
+    renderCircuitForm();
+    renderCircuitEditor();
+    setCircuitStatus("새 부품을 추가했습니다. 위치와 이름을 수정해 보세요.");
+  });
+
+  deleteCircuitNodeButton?.addEventListener("click", () => {
+    if (!circuitModel || !selectedNodeId) {
+      setCircuitStatus("삭제할 부품을 먼저 선택하세요.");
+      return;
+    }
+    circuitModel.nodes = circuitModel.nodes.filter((node) => node.id !== selectedNodeId);
+    circuitModel.wires = circuitModel.wires.filter((wire) => wire.from !== selectedNodeId && wire.to !== selectedNodeId);
+    selectedNodeId = circuitModel.nodes[0]?.id || null;
+    selectedWireIndex = null;
+    persistCircuitModel(languageSelect.value);
+    renderCircuitForm();
+    renderCircuitEditor();
+    setCircuitStatus("선택한 부품을 삭제했습니다.");
+  });
+
+  connectComponentButton?.addEventListener("click", () => {
+    if (!circuitModel || !selectedNodeId) {
+      setCircuitStatus("연결 시작 부품을 먼저 선택하세요.");
+      return;
+    }
+    selectedWireIndex = null;
+    connectFromNodeId = selectedNodeId;
+    setCircuitStatus("연결할 대상 부품을 클릭하세요.");
+  });
+
+  removeWireButton?.addEventListener("click", () => {
+    if (!circuitModel || selectedWireIndex === null) {
+      setCircuitStatus("삭제할 와이어를 먼저 선택하세요.");
+      return;
+    }
+    circuitModel.wires.splice(selectedWireIndex, 1);
+    selectedWireIndex = null;
+    persistCircuitModel(languageSelect.value);
+    renderCircuitEditor();
+    setCircuitStatus("선택한 와이어를 삭제했습니다.");
+  });
+
+  resetCircuitButton?.addEventListener("click", () => {
+    if (!isCircuitLanguage(languageSelect.value)) {
+      return;
+    }
+    loadCircuitForLanguage(languageSelect.value, true);
+  });
+
+  circuitNodeLayer?.addEventListener("click", (event) => {
+    const nodeElement = event.target.closest(".circuit-node");
+    if (!nodeElement) {
+      return;
+    }
+    const nodeId = nodeElement.dataset.nodeId;
+    if (!nodeId) {
+      return;
+    }
+
+    if (connectFromNodeId && connectFromNodeId !== nodeId && circuitModel) {
+      const exists = circuitModel.wires.some(
+        (wire) => (wire.from === connectFromNodeId && wire.to === nodeId) || (wire.from === nodeId && wire.to === connectFromNodeId)
+      );
+      if (!exists) {
+        circuitModel.wires.push({ from: connectFromNodeId, to: nodeId });
+        persistCircuitModel(languageSelect.value);
+      }
+      connectFromNodeId = null;
+      selectedWireIndex = null;
+      selectedNodeId = nodeId;
+      renderCircuitForm();
+      renderCircuitEditor();
+      setCircuitStatus("배선을 추가했습니다.");
+      return;
+    }
+
+    selectCircuitNode(nodeId);
+  });
+
+  circuitWireLayer?.addEventListener("click", (event) => {
+    const wireElement = event.target.closest(".circuit-wire");
+    if (!wireElement) {
+      return;
+    }
+    const wireIndex = Number(wireElement.getAttribute("data-wire-index"));
+    if (Number.isNaN(wireIndex)) {
+      return;
+    }
+    selectedWireIndex = wireIndex;
+    connectFromNodeId = null;
+    renderCircuitEditor();
+    setCircuitStatus("와이어 선택됨. 와이어 삭제 버튼으로 제거할 수 있습니다.");
+  });
+
+  circuitNodeLayer?.addEventListener("mousedown", (event) => {
+    const nodeElement = event.target.closest(".circuit-node");
+    if (!nodeElement || !circuitWorkspace || !circuitModel) {
+      return;
+    }
+    const nodeId = nodeElement.dataset.nodeId;
+    const node = getNodeById(nodeId);
+    if (!node) {
+      return;
+    }
+
+    const workspaceRect = circuitWorkspace.getBoundingClientRect();
+    dragState = {
+      nodeId,
+      offsetX: event.clientX - workspaceRect.left - node.x,
+      offsetY: event.clientY - workspaceRect.top - node.y,
+    };
+    selectedNodeId = nodeId;
+    selectedWireIndex = null;
+    renderCircuitForm();
+    renderCircuitEditor();
+  });
+
+  circuitComponentType?.addEventListener("change", () => {
+    const node = getNodeById(selectedNodeId);
+    if (!node) {
+      return;
+    }
+    node.type = circuitComponentType.value;
+    persistCircuitModel(languageSelect.value);
+    renderCircuitEditor();
+  });
+
+  window.addEventListener("mousemove", (event) => {
+    if (!dragState || !circuitWorkspace || !circuitModel) {
+      return;
+    }
+    const node = getNodeById(dragState.nodeId);
+    if (!node) {
+      return;
+    }
+    const workspaceRect = circuitWorkspace.getBoundingClientRect();
+    const maxX = Math.max(0, circuitWorkspace.clientWidth - 132);
+    const maxY = Math.max(0, circuitWorkspace.clientHeight - 56);
+    node.x = clamp(snapToGrid(event.clientX - workspaceRect.left - dragState.offsetX), 0, maxX);
+    node.y = clamp(snapToGrid(event.clientY - workspaceRect.top - dragState.offsetY), 0, maxY);
+    renderCircuitForm();
+    renderCircuitEditor();
+  });
+
+  window.addEventListener("mouseup", () => {
+    if (!dragState) {
+      return;
+    }
+    persistCircuitModel(languageSelect.value);
+    dragState = null;
+  });
+}
+
+function initAssistantPage() {
+  const ideaPrompt = document.getElementById("ideaPrompt");
+  const ideaResponse = document.getElementById("ideaResponse");
+  const learningGuide = document.getElementById("learningGuide");
+  const ideaButton = document.getElementById("ideaButton");
+  const assistantLanguageSelect = document.getElementById("assistantLanguageSelect");
+  const coachLanguageSelect = document.getElementById("coachLanguageSelect");
+  const coachCodeInput = document.getElementById("coachCodeInput");
+  const coachGoalInput = document.getElementById("coachGoalInput");
+  const coachButton = document.getElementById("coachButton");
+  const coachResponse = document.getElementById("coachResponse");
+  const plannerPrompt = document.getElementById("plannerPrompt");
+  const plannerButton = document.getElementById("plannerButton");
+  const plannerResponse = document.getElementById("plannerResponse");
+  if (!ideaPrompt || !ideaResponse || !learningGuide || !ideaButton || !assistantLanguageSelect) {
+    return;
+  }
+
+  populateLanguageSelect(assistantLanguageSelect);
+  assistantLanguageSelect.value = "javascript";
+  renderLearningGuide(learningGuide, assistantLanguageSelect.value);
+  ideaResponse.textContent = content[currentLocale].ideaFallback;
+
+  assistantLanguageSelect.addEventListener("change", (event) => {
+    renderLearningGuide(learningGuide, event.target.value);
+  });
+  ideaButton.addEventListener("click", () => {
+    ideaResponse.textContent = buildIdeaResponse(ideaPrompt.value);
+  });
+
+  if (coachLanguageSelect && coachCodeInput && coachGoalInput && coachButton && coachResponse) {
+    populateLanguageSelect(coachLanguageSelect);
+    coachLanguageSelect.value = "javascript";
+    coachResponse.textContent = currentLocale === "ko" ? "코드를 넣고 목표를 쓰면 개선안을 제안합니다." : "Paste code and goal to get improvements.";
+    coachButton.addEventListener("click", () => {
+      coachResponse.textContent = buildCoachResponse(coachLanguageSelect.value, coachCodeInput.value, coachGoalInput.value);
+    });
+  }
+
+  if (plannerPrompt && plannerButton && plannerResponse) {
+    plannerResponse.textContent = currentLocale === "ko" ? "원하는 기능을 설명하면 단계별 구현 계획을 생성합니다." : "Describe features to get a phased implementation plan.";
+    plannerButton.addEventListener("click", () => {
+      plannerResponse.textContent = buildPlannerResponse(plannerPrompt.value);
+    });
+  }
+}
+
+function initErrorsPage() {
+  const errorInput = document.getElementById("errorInput");
+  const errorButton = document.getElementById("errorButton");
+  const errorLanguageSelect = document.getElementById("errorLanguageSelect");
+  const errorFileInput = document.getElementById("errorFileInput");
+  const errorCodeInput = document.getElementById("errorCodeInput");
+  const errorResponse = document.getElementById("errorResponse");
+  if (!errorInput || !errorButton || !errorResponse || !errorLanguageSelect || !errorFileInput || !errorCodeInput) {
+    return;
+  }
+
+  populateLanguageSelect(errorLanguageSelect);
+  errorLanguageSelect.value = "javascript";
+  errorResponse.textContent = content[currentLocale].errorEmpty;
+  errorButton.addEventListener("click", () => {
+    errorResponse.textContent = buildDetailedErrorReview(
+      errorInput.value,
+      errorLanguageSelect.value,
+      errorFileInput.value.trim(),
+      errorCodeInput.value
+    );
+  });
+}
+
+function initCommunityPage() {
+  const snippetList = document.getElementById("snippetList");
+  const publicSnippetList = document.getElementById("publicSnippetList");
+  const publishSelect = document.getElementById("publishProjectSelect");
+  const publishButton = document.getElementById("publishButton");
+  const publishDescription = document.getElementById("publishDescription");
+  const publishStatus = document.getElementById("publishStatus");
+  if (!snippetList || !publicSnippetList || !publishSelect || !publishButton || !publishDescription || !publishStatus) {
+    return;
+  }
+
+  function renderBuiltInSnippets() {
+    snippetList.innerHTML = snippets
+      .map(
+        (snippet, index) => `
+          <li data-snippet-index="${index}">
+            <strong>${escapeHtml(snippet.title)}</strong>
+            <span>${escapeHtml(snippet.description)}</span>
+          </li>`
+      )
+      .join("");
+  }
+
+  function renderPublicSnippets() {
+    const list = getPublicSnippets().sort((a, b) => b.createdAt - a.createdAt);
+    if (!list.length) {
+      publicSnippetList.innerHTML = "<li><span>아직 공개된 코드가 없습니다.</span></li>";
+      return;
+    }
+
+    publicSnippetList.innerHTML = list
+      .map(
+        (item, index) => `
+          <li>
+            <strong>${escapeHtml(item.title)}</strong>
+            <span>${escapeHtml(item.description || "설명 없음")}</span>
+            <small>${escapeHtml(item.author)} · ${escapeHtml(languageSamples[item.language]?.label || item.language)} · ${formatTimestamp(item.createdAt)}</small>
+            <button type="button" data-public-index="${index}">에디터로 열기</button>
+          </li>`
+      )
+      .join("");
+  }
+
+  function populatePublishProjects() {
+    const projects = getProjects();
+    publishSelect.innerHTML = projects
+      .map((project) => `<option value="${escapeHtml(project.name)}">${escapeHtml(project.name)} (${escapeHtml(languageSamples[project.language]?.label || project.language)})</option>`)
+      .join("");
+
+    if (!projects.length) {
+      publishSelect.innerHTML = "<option value=''>저장된 프로젝트 없음</option>";
+      publishButton.disabled = true;
+    }
+  }
+
+  renderBuiltInSnippets();
+  renderPublicSnippets();
+  populatePublishProjects();
+
+  snippetList.addEventListener("click", (event) => {
+    const item = event.target.closest("li[data-snippet-index]");
+    if (!item) {
+      return;
+    }
+
+    localStorage.setItem(pendingSnippetKey, JSON.stringify(snippets[Number(item.dataset.snippetIndex)]));
+    window.location.href = `editor.html?snippet=${item.dataset.snippetIndex}`;
+  });
+
+  publicSnippetList.addEventListener("click", (event) => {
+    const button = event.target.closest("button[data-public-index]");
+    if (!button) {
+      return;
+    }
+    const item = getPublicSnippets().sort((a, b) => b.createdAt - a.createdAt)[Number(button.dataset.publicIndex)];
+    if (!item) {
+      return;
+    }
+    localStorage.setItem(pendingSnippetKey, JSON.stringify(item));
+    window.location.href = "editor.html";
+  });
+
+  publishButton.addEventListener("click", () => {
+    const user = getCurrentUser();
+    if (!user) {
+      publishStatus.textContent = "로그인 후 공개할 수 있습니다.";
+      return;
+    }
+
+    const project = getProjects().find((item) => item.name === publishSelect.value);
+    if (!project) {
+      publishStatus.textContent = "프로젝트를 선택해 주세요.";
+      return;
+    }
+
+    const list = getPublicSnippets();
+    list.push({
+      title: project.name,
+      description: publishDescription.value.trim(),
+      language: project.language,
+      code: project.code,
+      author: user,
+      createdAt: Date.now(),
+    });
+    setPublicSnippets(list);
+    publishStatus.textContent = "코드를 공개했습니다.";
+    renderPublicSnippets();
+  });
+}
+
+function initLoginPage() {
+  const loginUsername = document.getElementById("loginUsername");
+  const loginPassword = document.getElementById("loginPassword");
+  const registerUsername = document.getElementById("registerUsername");
+  const registerPassword = document.getElementById("registerPassword");
+  const loginButton = document.getElementById("loginButton");
+  const registerButton = document.getElementById("registerButton");
+  const authStatusBox = document.getElementById("authStatusBox");
+  if (!loginUsername || !loginPassword || !registerUsername || !registerPassword || !loginButton || !registerButton || !authStatusBox) {
+    return;
+  }
+
+  authStatusBox.textContent = "아이디는 3~20자의 영문/숫자/_/- 형식, 비밀번호는 8자 이상을 권장합니다.";
+
+  registerButton.addEventListener("click", async () => {
+    const username = sanitizeName(registerUsername.value);
+    const password = registerPassword.value;
+    if (username.length < 3) {
+      authStatusBox.textContent = "아이디 형식이 올바르지 않습니다.";
+      return;
+    }
+    if (password.length < 8) {
+      authStatusBox.textContent = "비밀번호는 8자 이상으로 설정하세요.";
+      return;
+    }
+
+    const users = getUsers();
+    if (users.some((user) => user.username === username)) {
+      authStatusBox.textContent = "이미 존재하는 아이디입니다.";
+      return;
+    }
+
+    const hash = await hashPassword(password);
+    users.push({
+      username,
+      passwordHash: hash,
+      profile: { displayName: username, bio: "", favoriteLang: "" },
+    });
+    setUsers(users);
+    authStatusBox.textContent = "계정 생성 완료. 이제 로그인할 수 있습니다.";
+  });
+
+  loginButton.addEventListener("click", async () => {
+    const username = sanitizeName(loginUsername.value);
+    const hash = await hashPassword(loginPassword.value);
+    const users = getUsers();
+    const found = users.find((user) => user.username === username && user.passwordHash === hash);
+    if (!found) {
+      authStatusBox.textContent = "로그인 실패: 아이디 또는 비밀번호를 확인하세요.";
+      return;
+    }
+
+    setCurrentUser(username);
+    authStatusBox.textContent = "로그인 성공. 프로필 페이지로 이동합니다.";
+    setTimeout(() => {
+      window.location.href = "profile.html";
+    }, 400);
+  });
+}
+
+function initProfilePage() {
+  const displayName = document.getElementById("profileDisplayName");
+  const bio = document.getElementById("profileBio");
+  const favoriteLang = document.getElementById("profileFavoriteLang");
+  const saveButton = document.getElementById("saveProfileButton");
+  const statusBox = document.getElementById("profileStatusBox");
+  const logoutButton = document.getElementById("logoutButton");
+  const myPublicList = document.getElementById("myPublicSnippetList");
+  if (!displayName || !bio || !favoriteLang || !saveButton || !statusBox || !logoutButton || !myPublicList) {
+    return;
+  }
+
+  const user = getCurrentUser();
+  if (!user) {
+    statusBox.innerHTML = "로그인이 필요합니다. <a href='login.html'>로그인 페이지로 이동</a>";
+    saveButton.disabled = true;
+    return;
+  }
+
+  const users = getUsers();
+  const me = users.find((item) => item.username === user);
+  if (!me) {
+    statusBox.textContent = "계정 정보를 찾을 수 없습니다.";
+    return;
+  }
+
+  displayName.value = me.profile.displayName || me.username;
+  bio.value = me.profile.bio || "";
+  favoriteLang.value = me.profile.favoriteLang || "";
+  statusBox.textContent = `로그인 사용자: ${me.username}`;
+
+  function renderMyPublic() {
+    const mine = getPublicSnippets().filter((snippet) => snippet.author === me.username);
+    if (!mine.length) {
+      myPublicList.innerHTML = "<li><span>아직 공개한 코드가 없습니다.</span></li>";
+      return;
+    }
+    myPublicList.innerHTML = mine
+      .map(
+        (item) => `<li><strong>${escapeHtml(item.title)}</strong><span>${escapeHtml(item.description || "설명 없음")}</span><small>${formatTimestamp(item.createdAt)}</small></li>`
+      )
+      .join("");
+  }
+
+  renderMyPublic();
+
+  saveButton.addEventListener("click", () => {
+    me.profile.displayName = displayName.value.trim().slice(0, 40);
+    me.profile.bio = bio.value.trim().slice(0, 300);
+    me.profile.favoriteLang = favoriteLang.value.trim().slice(0, 40);
+    setUsers(users);
+    statusBox.textContent = "프로필 저장 완료";
+  });
+
+  logoutButton.addEventListener("click", () => {
+    setCurrentUser(null);
+    window.location.href = "login.html";
+  });
+}
+
+function ensureHomeLanding() {
+  const path = window.location.pathname || "";
+  if (path.endsWith("/") || path.endsWith("/test")) {
+    window.location.replace("index.html");
+  }
+}
+
+ensureHomeLanding();
+applyLocaleSelections();
+initSidebarToggle();
+renderAuthShortcut();
+initHomePage();
+initEditorPage();
+initAssistantPage();
+initErrorsPage();
+initCommunityPage();
+initLoginPage();
+initProfilePage();
