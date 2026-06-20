@@ -1,4 +1,8 @@
 {
+  "scripts": {
+    "server": "node local-server.js",
+    "start": "powershell -ExecutionPolicy Bypass -File ./start-vpr.ps1"
+  },
   "dependencies": {
     "express": "^5.2.1"
   }

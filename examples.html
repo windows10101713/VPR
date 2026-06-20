@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>VPR | Profile</title>
+    <title>VPR | Examples</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,7 +12,7 @@
     />
     <link rel="stylesheet" href="styles.css" />
   </head>
-  <body data-page="profile">
+  <body data-page="examples">
     <div class="app-shell">
       <aside class="sidebar">
         <div>
@@ -26,24 +26,24 @@
           <nav class="menu">
             <a class="menu-item" href="index.html"><span>홈</span><small>Home</small></a>
             <a class="menu-item" href="editor.html"><span>에디터</span><small>Editor</small></a>
-            <a class="menu-item" href="examples.html"><span>예제</span><small>Examples</small></a>
+            <a class="menu-item is-active" href="examples.html"><span>예제</span><small>Examples</small></a>
             <a class="menu-item" href="assistant.html"><span>AI 도우미</span><small>Assistant</small></a>
             <a class="menu-item" href="errors.html"><span>에러 해결</span><small>Error Fix</small></a>
             <a class="menu-item" href="community.html"><span>공유</span><small>Community</small></a>
           </nav>
         </div>
         <div class="sidebar-card">
-          <p class="eyebrow">프로필</p>
-          <h2>내 계정 관리</h2>
-          <p>소개, 선호 언어, 공개 코드 목록을 관리합니다.</p>
+          <p class="eyebrow">예제 탭</p>
+          <h2>언어별 코드 빠른 시작</h2>
+          <p>Basic 예제는 항상 Hello from 언어 + 1+1 연산을 포함합니다.</p>
         </div>
       </aside>
 
       <main class="main-content page-stack">
         <header class="topbar">
           <div>
-            <p class="eyebrow">User Profile</p>
-            <h2>내 프로필 관리</h2>
+            <p class="eyebrow">Examples Workspace</p>
+            <h2 id="page-title">언어별 예제 선택 후 에디터로 이동</h2>
           </div>
           <div class="topbar-actions">
             <label class="language-switch" for="localeSelect">
@@ -60,38 +60,29 @@
                 <option value="dark">Dark</option>
               </select>
             </label>
+            <a class="primary-button" href="editor.html">에디터 열기</a>
           </div>
         </header>
 
-        <section class="feature-grid">
-          <article class="feature-card">
-            <p class="eyebrow">내 정보</p>
-            <h3>프로필 수정</h3>
-            <img id="profileImagePreview" class="profile-avatar" src="https://placehold.co/120x120?text=VPR" alt="profile" />
-            <label>프로필 이미지 업로드<input id="profileImageFile" type="file" accept="image/*" /></label>
-            <label>프로필 이미지 URL/Data<input id="profileImageUrl" type="text" /></label>
-            <label>표시 이름<input id="profileDisplayName" type="text" /></label>
-            <label>소개<textarea id="profileBio"></textarea></label>
-            <label>선호 언어<input id="profileFavoriteLang" type="text" /></label>
-            <button class="primary-button small" id="saveProfileButton" type="button">프로필 저장</button>
-          </article>
-
-          <article class="feature-card">
-            <p class="eyebrow">계정 상태</p>
-            <h3>로그인 정보</h3>
-            <div class="response-box" id="profileStatusBox"></div>
-            <button class="ghost-button small" id="logoutButton" type="button">로그아웃</button>
-            <label>계정 삭제 확인용 1차 비밀번호<input id="deletePassword" type="password" /></label>
-            <label>계정 삭제 확인용 2차 비밀번호<input id="deleteSecondPassword" type="password" /></label>
-            <button class="secondary-button small danger" id="deleteAccountButton" type="button">계정 삭제</button>
-          </article>
-        </section>
-
         <section class="feature-grid single-column-grid">
           <article class="feature-card wide">
-            <p class="eyebrow">공개 코드</p>
-            <h3>내가 공개한 코드</h3>
-            <ul class="snippet-list" id="myPublicSnippetList"></ul>
+            <p class="eyebrow">Language Examples</p>
+            <h3 id="examplesTitle">Basic Example</h3>
+            <div class="home-settings-grid">
+              <label>
+                언어
+                <select id="examplesLanguageSelect"></select>
+              </label>
+              <label>
+                카테고리
+                <select id="examplesCategorySelect"></select>
+              </label>
+            </div>
+            <pre id="examplesCode" class="examples-code"></pre>
+            <div class="button-row">
+              <button class="primary-button small" id="examplesOpenInEditorButton" type="button">에디터로 가져오기</button>
+            </div>
+            <div class="response-box" id="examplesStatus"></div>
           </article>
         </section>
       </main>

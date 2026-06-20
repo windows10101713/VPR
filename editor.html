@@ -26,6 +26,7 @@
           <nav class="menu">
             <a class="menu-item" href="index.html"><span>홈</span><small>Home</small></a>
             <a class="menu-item is-active" href="editor.html"><span>에디터</span><small>Editor</small></a>
+            <a class="menu-item" href="examples.html"><span>예제</span><small>Examples</small></a>
             <a class="menu-item" href="assistant.html"><span>AI 도우미</span><small>Assistant</small></a>
             <a class="menu-item" href="errors.html"><span>에러 해결</span><small>Error Fix</small></a>
             <a class="menu-item" href="community.html"><span>공유</span><small>Community</small></a>
@@ -52,6 +53,13 @@
                 <option value="en">English</option>
               </select>
             </label>
+            <label class="language-switch" for="themeSelect">
+              <span>테마</span>
+              <select id="themeSelect">
+                <option value="light">Light</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
             <span class="run-mode-pill" id="runModePill">Cloud Runtime</span>
             <a class="ghost-button" href="community.html">예제 가져오기</a>
           </div>
@@ -70,10 +78,41 @@
             <div class="window-bar">
               <div class="window-dots"><span></span><span></span><span></span></div>
               <div class="window-actions">
-                <button class="window-action" type="button">파일</button>
-                <button class="window-action" type="button">편집</button>
-                <button class="window-action" type="button">실행</button>
-                <button class="window-action" type="button">도움말</button>
+                <div class="window-menu">
+                  <button class="window-action" id="fileMenuButton" type="button">파일</button>
+                  <div class="window-dropdown is-hidden" id="fileMenuDropdown">
+                    <button class="window-dropdown-item" id="menuSaveButton" type="button">저장</button>
+                    <button class="window-dropdown-item" id="menuSaveAsButton" type="button">다른 이름으로 저장</button>
+                    <button class="window-dropdown-item danger" id="menuDeleteProjectButton" type="button">프로젝트 삭제</button>
+                  </div>
+                </div>
+                <div class="window-menu">
+                  <button class="window-action" id="editMenuButton" type="button">편집</button>
+                  <div class="window-dropdown is-hidden" id="editMenuDropdown">
+                    <button class="window-dropdown-item" id="menuFindButton" type="button">찾기</button>
+                    <button class="window-dropdown-item" id="menuUndoButton" type="button">되돌리기</button>
+                    <button class="window-dropdown-item" id="menuRedoButton" type="button">다시 실행(Redo)</button>
+                    <button class="window-dropdown-item" id="menuRunAgainButton" type="button">코드 다시 실행</button>
+                    <button class="window-dropdown-item" id="menuRunAgainInteractiveButton" type="button">대화형 다시 실행</button>
+                  </div>
+                </div>
+                <div class="window-menu">
+                  <button class="window-action" id="helpMenuButton" type="button">도움말</button>
+                  <div class="window-dropdown is-hidden" id="helpMenuDropdown">
+                    <div class="window-help-block">
+                      <strong>빠른 단축키</strong>
+                      <p>Ctrl+Enter: 대화형 실행</p>
+                      <p>Shift+Enter: 표준 실행</p>
+                      <p>stdin 박스 Enter: 대화형 입력 전송</p>
+                    </div>
+                    <div class="window-help-block">
+                      <strong>메뉴 설명</strong>
+                      <p>파일: 저장/다른 이름 저장/삭제</p>
+                      <p>편집: 찾기/Undo/Redo/재실행</p>
+                      <p>도움말: 입력 모드와 실행 모드 안내</p>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -96,8 +135,11 @@
               </label>
               <button class="ghost-button small" id="newProjectButton" type="button">새 초안</button>
               <button class="primary-button small" id="runButton" type="button">실행</button>
+              <button class="primary-button small" id="interactiveRunButton" type="button" title="Ctrl+Enter">🔄 대화형</button>
               <button class="ghost-button small" id="saveButton" type="button">저장</button>
               <button class="ghost-button small" id="downloadButton" type="button">내보내기</button>
+              <button class="ghost-button small" id="copyAllCodeButton" type="button">코드 전체 복사</button>
+              <button class="ghost-button small" id="fixAiCodeButton" type="button">AI 코드 정리</button>
               <label class="ghost-button small file-trigger" for="importFileInput">가져오기</label>
               <input id="importFileInput" type="file" accept=".txt,.js,.py,.cpp,.html,.json" hidden />
             </div>
@@ -111,7 +153,19 @@
           <div class="output-panel">
             <div class="output-header">
               <h3>실행 결과</h3>
-              <span id="statusBadge">준비됨</span>
+              <div class="status-container">
+                <div class="status-indicator" id="statusIndicator">
+                  <div class="status-dot ready"></div>
+                  <span id="statusMessage">준비됨</span>
+                </div>
+                <div class="status-progress" id="statusProgress">
+                  <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                  </div>
+                  <span class="progress-text" id="progressText">준비됨</span>
+                </div>
+              </div>
+              <span id="statusBadge" style="display:none;">준비됨</span>
             </div>
             <div class="meta-strip">
               <div>
@@ -148,11 +202,29 @@
                 <p class="runtime-config-status" id="runtimeConfigStatus">기본 로컬 런타임(localhost)을 사용 중입니다.</p>
               </div>
             </div>
+            <div class="runtime-config-panel">
+              <div class="runtime-config-head">
+                <div class="section-label">표준 입력(stdin)</div>
+              </div>
+              <div class="runtime-config-body" id="stdinConfigBody">
+                <label>
+                  프로그램 입력값
+                  <textarea id="stdinInput" rows="4" spellcheck="false" placeholder="예: 10\nhello\n(줄바꿈으로 여러 입력 전달)"></textarea>
+                </label>
+                <p class="runtime-config-status">Python input(), C scanf, Java Scanner 등 입력 대기를 지원합니다.</p>
+              </div>
+            </div>
             <pre id="outputConsole"></pre>
             <div class="terminal-panel">
               <div class="section-label">터미널</div>
               <pre id="terminalConsole">vpr-terminal ready
 type: help</pre>
+              <div class="terminal-quick-actions">
+                <button class="ghost-button small" id="terminalStatusButton" type="button">status</button>
+                <button class="ghost-button small" id="terminalRuntimesButton" type="button">runtimes</button>
+                <button class="ghost-button small" id="terminalRunCodeButton" type="button">run</button>
+                <button class="ghost-button small" id="terminalAiPingButton" type="button">ai ping</button>
+              </div>
               <div class="terminal-input-row">
                 <input id="terminalInput" type="text" placeholder="예: pip install requests / ls / runtimes / clear" />
                 <button class="primary-button small" id="terminalRunButton" type="button">실행</button>
@@ -175,23 +247,95 @@ type: help</pre>
               <div id="circuitEditor" class="circuit-editor is-disabled">
                 <div class="circuit-toolbar">
                   <select id="circuitComponentType">
-                    <option value="sensor">Sensor</option>
-                    <option value="led">LED</option>
-                    <option value="resistor">Resistor</option>
-                    <option value="button">Button</option>
-                    <option value="module">Module</option>
+                    <optgroup label="MCU / Controller">
+                      <optgroup label="Arduino">
+                        <option value="arduino-uno">Arduino UNO</option>
+                        <option value="arduino-nano">Arduino Nano</option>
+                        <option value="arduino-mega">Arduino Mega 2560</option>
+                        <option value="arduino-leonardo">Arduino Leonardo</option>
+                        <option value="arduino-due">Arduino Due</option>
+                      </optgroup>
+                      <optgroup label="ESP8266">
+                        <option value="esp8266-01">ESP8266-01</option>
+                        <option value="esp8266-12">ESP8266-12E</option>
+                      </optgroup>
+                      <optgroup label="ESP32">
+                        <option value="esp32">ESP32 DevKit</option>
+                        <option value="esp32-s2">ESP32-S2</option>
+                        <option value="esp32-s3">ESP32-S3</option>
+                        <option value="esp32-c2">ESP32-C2</option>
+                        <option value="esp32-c3">ESP32-C3</option>
+                        <option value="esp32-c6">ESP32-C6</option>
+                        <option value="esp32-h2">ESP32-H2</option>
+                        <option value="esp32-p4">ESP32-P4</option>
+                      </optgroup>
+                    </optgroup>
+                    <optgroup label="LED - Input/Output">
+                      <option value="led-red">🔴 Red LED</option>
+                      <option value="led-green">🟢 Green LED</option>
+                      <option value="led-blue">🔵 Blue LED</option>
+                      <option value="led-yellow">🟡 Yellow LED</option>
+                      <option value="led-rgb">🌈 RGB LED</option>
+                    </optgroup>
+                    <optgroup label="Display">
+                      <option value="oled-096">0.96" OLED (I2C)</option>
+                      <option value="oled-128">1.3" OLED (SPI)</option>
+                      <option value="tft-144">1.44" TFT (SPI)</option>
+                      <option value="tft-18">1.8" TFT (SPI)</option>
+                      <option value="tft-24">2.4" TFT (SPI)</option>
+                      <option value="tft-35">3.5" TFT (SPI)</option>
+                      <option value="tft-7">7" TFT (HDMI)</option>
+                      <option value="lcd-16x2">16x2 LCD (I2C)</option>
+                    </optgroup>
+                    <optgroup label="Sensor / Module">
+                      <option value="button">Push Button</option>
+                      <option value="buzzer">Buzzer</option>
+                      <option value="pir-sensor">PIR Motion Sensor</option>
+                      <option value="temp-sensor">Temperature Sensor</option>
+                      <option value="ldr-sensor">Light Sensor (LDR)</option>
+                      <option value="relay">5V Relay Module</option>
+                      <option value="gsm">GSM Module (SIM800L)</option>
+                      <option value="wifi">WiFi Module</option>
+                      <option value="bluetooth">Bluetooth Module</option>
+                      <option value="gps">GPS Module (NEO-6M)</option>
+                      <option value="lorawan">LoRaWAN Module</option>
+                    </optgroup>
+                    <optgroup label="Motor / Mechanical">
+                      <option value="motor-dc-3v">DC Motor 3V</option>
+                      <option value="motor-dc-5v">DC Motor 5V</option>
+                      <option value="servo-9g">Servo Motor 9g</option>
+                      <option value="servo-metal">Servo Metal Gear</option>
+                      <option value="stepper">Stepper Motor (28BYJ-48)</option>
+                    </optgroup>
+                    <optgroup label="Passive Components">
+                      <option value="resistor">Resistor</option>
+                      <option value="capacitor">Capacitor</option>
+                      <option value="inductor">Inductor</option>
+                    </optgroup>
+                    <optgroup label="Other">
+                      <option value="breadboard">Breadboard</option>
+                      <option value="wire">Wire/Jumper</option>
+                    </optgroup>
                   </select>
                   <button class="ghost-button small" id="addComponentButton" type="button">부품 추가</button>
                   <button class="ghost-button small" id="connectComponentButton" type="button">와이어 모드</button>
                   <button class="ghost-button small" id="removeWireButton" type="button">와이어 삭제</button>
                   <button class="ghost-button small" id="resetCircuitButton" type="button">초기 배치</button>
                 </div>
-                <div class="circuit-workspace" id="circuitWorkspace">
-                  <svg id="circuitWireLayer" class="circuit-wire-layer"></svg>
-                  <div id="circuitNodeLayer" class="circuit-node-layer"></div>
-                  <div id="circuitDisabledOverlay" class="circuit-disabled-overlay">Arduino/ESP-IDF를 선택하면 회로 편집기가 활성화됩니다.</div>
+                <div class="circuit-workspace-scroll" id="circuitWorkspaceScroll">
+                  <div class="circuit-workspace" id="circuitWorkspace">
+                    <svg id="circuitWireLayer" class="circuit-wire-layer"></svg>
+                    <div id="circuitNodeLayer" class="circuit-node-layer"></div>
+                    <div id="circuitDisabledOverlay" class="circuit-disabled-overlay">Arduino/ESP-IDF를 선택하면 회로 편집기가 활성화됩니다.</div>
+                  </div>
                 </div>
                 <div class="circuit-form">
+                  <label>
+                    코드 배포 MCU
+                    <select id="circuitTargetMcu" style="width: 100%; padding: 9px 10px;">
+                      <option value="">MCU 선택 (자동 감지)</option>
+                    </select>
+                  </label>
                   <label>
                     이름
                     <input id="circuitNameInput" type="text" maxlength="24" placeholder="component name" />
@@ -202,11 +346,11 @@ type: help</pre>
                   </label>
                   <label>
                     X
-                    <input id="circuitXInput" type="number" min="0" max="900" />
+                    <input id="circuitXInput" type="number" min="0" max="5000" />
                   </label>
                   <label>
                     Y
-                    <input id="circuitYInput" type="number" min="0" max="700" />
+                    <input id="circuitYInput" type="number" min="0" max="2000" />
                   </label>
                   <button class="primary-button small" id="applyCircuitNodeButton" type="button">수정 적용</button>
                   <button class="ghost-button small" id="deleteCircuitNodeButton" type="button">선택 삭제</button>
