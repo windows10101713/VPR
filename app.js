@@ -76,10 +76,19 @@ const aiActiveChatRoomKey = "vpr-ai-active-chat-room";
 const homeMemoKey = "vpr-home-memo";
 const homeTodoKey = "vpr-home-todos";
 const homeBrowserUrlKey = "vpr-home-browser-url";
-const defaultRuntimeEndpoint = "http://localhost:3000/api/v2/piston/execute";
-const defaultAiProxyEndpoint = "http://localhost:3000/api/ai/chat";
-const defaultAiModelAuditEndpoint = "http://localhost:3000/api/ai/models/audit";
-const defaultDataApiBase = "http://localhost:3000/api/data";
+const _isLocalDev = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(window.location.host);
+const defaultRuntimeEndpoint = _isLocalDev
+  ? "http://localhost:3000/api/v2/piston/execute"
+  : `${window.location.origin}/api/v2/piston/execute`;
+const defaultAiProxyEndpoint = _isLocalDev
+  ? "http://localhost:3000/api/ai/chat"
+  : `${window.location.origin}/api/ai/chat`;
+const defaultAiModelAuditEndpoint = _isLocalDev
+  ? "http://localhost:3000/api/ai/models/audit"
+  : `${window.location.origin}/api/ai/models/audit`;
+const defaultDataApiBase = _isLocalDev
+  ? "http://localhost:3000/api/data"
+  : `${window.location.origin}/api/data`;
 
 const localeOptions = {
   ko: "한국어",

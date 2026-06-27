@@ -1,7 +1,10 @@
 {
   "scripts": {
     "server": "node local-server.js",
-    "start": "powershell -ExecutionPolicy Bypass -File ./start-vpr.ps1"
+    "start": "node local-server.js"
+  },
+  "engines": {
+    "node": ">=22.5.0"
   },
   "dependencies": {
     "express": "^5.2.1"

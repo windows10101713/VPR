@@ -737,7 +737,8 @@ const server = http.createServer(async (req, res) => {
   const isAllowedOrigin =
     !origin ||
     origin === 'null' ||
-    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+    /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin) ||
+    /^https:\/\/[a-zA-Z0-9-]+\.azurewebsites\.net$/.test(origin);
 
   if (isAllowedOrigin) {
     res.setHeader('Access-Control-Allow-Origin', origin || '*');
