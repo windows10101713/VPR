@@ -936,10 +936,15 @@ const server = http.createServer(async (req, res) => {
     }
     try {
       const { command, cwd } = await readJsonBody(req);
-      const cmd = String(command || '').trim();
+      let cmd = String(command || '').trim();
       if (!cmd) {
         res.writeHead(400, { 'Content-Type': 'application/json; charset=utf-8' });
         return res.end(JSON.stringify({ message: 'Missing command' }));
+      }
+
+      // On Linux, pip/pip3 may not be in PATH — transparently remap to python3 -m pip
+      if (process.platform !== 'win32') {
+        cmd = cmd.replace(/^pip3?(\s|$)/, 'python3 -m pip$1');
       }
 
       const requestedCwd = String(cwd || '').trim();
