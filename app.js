@@ -76,7 +76,7 @@ const aiActiveChatRoomKey = "vpr-ai-active-chat-room";
 const homeMemoKey = "vpr-home-memo";
 const homeTodoKey = "vpr-home-todos";
 const homeBrowserUrlKey = "vpr-home-browser-url";
-const _isLocalDev = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(window.location.host);
+const _isLocalDev = /^(localhost|127\.0\.0\.1)(:\d+)?$/.test(window.location.host) || window.location.protocol === 'file:';
 const defaultRuntimeEndpoint = _isLocalDev
   ? "http://localhost:3000/api/v2/piston/execute"
   : `${window.location.origin}/api/v2/piston/execute`;
