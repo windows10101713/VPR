@@ -27,7 +27,27 @@ function Test-PortOpen {
   }
 }
 
+function Ensure-FirewallRule {
+  param([int]$Port)
+  $ruleName = "VPR Local Server (TCP $Port)"
+  $existing = Get-NetFirewallRule -DisplayName $ruleName -ErrorAction SilentlyContinue
+  if (-not $existing) {
+    Write-Host "[VPR] 방화벽 규칙 추가 중 (포트 $Port)..." -ForegroundColor Yellow
+    try {
+      New-NetFirewallRule -DisplayName $ruleName -Direction Inbound -Protocol TCP -LocalPort $Port -Action Allow -Profile Any -ErrorAction Stop | Out-Null
+      Write-Host "[VPR] ✓ 방화벽 포트 $Port 열림" -ForegroundColor Green
+    } catch {
+      Write-Host "[VPR] 방화벽 규칙 추가 실패 (관리자 권한 필요할 수 있음): $_" -ForegroundColor Yellow
+    }
+  } else {
+    Write-Host "[VPR] ✓ 방화벽 포트 $Port 이미 열려 있음" -ForegroundColor Green
+  }
+}
+
 Write-Host "[VPR] boot script started" -ForegroundColor Cyan
+
+# Open firewall port 3000
+Ensure-FirewallRule -Port 3000
 
 if (-not (Test-Path $ollamaPath)) {
   Write-Host "[VPR] Ollama not found at $ollamaPath" -ForegroundColor Yellow
@@ -50,12 +70,12 @@ if (Test-PortOpen -Port 3000) {
   Write-Host "[VPR] local-server already running on 3000" -ForegroundColor Yellow
   Write-Host "[VPR] opening editor in browser..." -ForegroundColor Cyan
   Start-Sleep -Seconds 1
-  Start-Process "file:///$($projectRoot -replace '\\', '/')/editor.html"
+  Start-Process "http://localhost:3000/editor.html"
   exit 0
 }
 
 Write-Host "[VPR] starting local-server.js..." -ForegroundColor Green
-$serverProcess = Start-Process -FilePath $nodeCmd -ArgumentList "local-server.js" -PassThru -NoNewWindow
+$serverProcess = Start-Process -FilePath $nodeCmd -ArgumentList "--experimental-sqlite local-server.js" -PassThru -NoNewWindow
 
 Write-Host "[VPR] waiting for server to start..." -ForegroundColor Green
 $maxRetries = 10
@@ -69,7 +89,7 @@ if (Test-PortOpen -Port 3000) {
   Write-Host "[VPR] ✓ Server is online! (port 3000)" -ForegroundColor Green
   Write-Host "[VPR] opening editor in browser..." -ForegroundColor Green
   Start-Sleep -Seconds 1
-  Start-Process "file:///$($projectRoot -replace '\\', '/')/editor.html"
+  Start-Process "http://localhost:3000/editor.html"
   Write-Host "[VPR] VPR 시작 완료! Editor가 브라우저에서 열렸습니다." -ForegroundColor Cyan
   Write-Host "[VPR] 브라우저에서 닫으면 아래에서 이 창을 닫으세요." -ForegroundColor Cyan
   Write-Host "[VPR] 서버 중지: Ctrl+C" -ForegroundColor Yellow
