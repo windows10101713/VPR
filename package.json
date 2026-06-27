@@ -1,7 +1,7 @@
 {
   "scripts": {
-    "server": "node local-server.js",
-    "start": "node local-server.js"
+    "server": "node --experimental-sqlite local-server.js",
+    "start": "node --experimental-sqlite local-server.js"
   },
   "engines": {
     "node": ">=22.5.0"
