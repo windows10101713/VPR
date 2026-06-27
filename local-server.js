@@ -7,7 +7,7 @@ const PORT = Number(process.env.PORT || 3000);
 const AI_MAX_OUTPUT_TOKENS = 2048;
 const AI_REQUEST_TIMEOUT_MS = 90000;
 const MAX_JSON_BODY_BYTES = 1024 * 1024; // 1MB
-const ENABLE_TERMINAL_EXEC = process.env.VPR_ENABLE_TERMINAL_EXEC === '1';
+const ENABLE_TERMINAL_EXEC = process.env.VPR_ENABLE_TERMINAL_EXEC !== '0';
 const DATA_DIR = path.join(__dirname, 'data');
 const DB_PATH = path.join(DATA_DIR, 'vpr.db');
 const activeProcesses = new Map();
