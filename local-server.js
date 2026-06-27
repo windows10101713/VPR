@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const { DatabaseSync } = require('node:sqlite');
 const { spawn, execSync } = require('child_process');
-const PORT = 3000;
+const PORT = Number(process.env.PORT || 8080);
 const AI_MAX_OUTPUT_TOKENS = 2048;
 const AI_REQUEST_TIMEOUT_MS = 90000;
 const MAX_JSON_BODY_BYTES = 1024 * 1024; // 1MB
@@ -747,12 +747,6 @@ const server = http.createServer(async (req, res) => {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
-
-  if (!isLoopbackAddress(clientAddr)) {
-    res.writeHead(403, { 'Content-Type': 'application/json; charset=utf-8' });
-    res.end(JSON.stringify({ message: 'Forbidden: local requests only' }));
-    return;
-  }
 
   if (req.method === 'OPTIONS') {
     return res.writeHead(200), res.end();
