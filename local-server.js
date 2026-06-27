@@ -634,7 +634,8 @@ async function callAiProvider({ provider, endpoint, model, apiKey, prompt }) {
 // Check if command exists in system
 function commandExists(cmd) {
   try {
-    execSync(`where ${cmd}`, { stdio: 'ignore' });
+    const isWindows = process.platform === 'win32';
+    execSync(isWindows ? `where ${cmd}` : `which ${cmd}`, { stdio: 'ignore' });
     return true;
   } catch {
     return false;
@@ -986,8 +987,8 @@ const server = http.createServer(async (req, res) => {
         if (language === 'javascript') {
           fs.writeFileSync(tmpFile, code);
           cleanupFiles.push(tmpFile);
-          requireCommand('node', language);
-          cmd = `node "${tmpFile}"`;
+          // Use the same node binary that is running this server
+          cmd = `"${process.execPath}" "${tmpFile}"`;
         } else if (language === 'typescript') {
           fs.writeFileSync(tmpFile, code);
           cleanupFiles.push(tmpFile);
@@ -997,9 +998,9 @@ const server = http.createServer(async (req, res) => {
             cmd = `npx --yes tsx "${tmpFile}"`;
           } else if (commandExists('ts-node')) {
             cmd = `ts-node --transpile-only "${tmpFile}"`;
-          } else if (commandExists('npx')) {
-            cmd = `npx --yes ts-node --transpile-only "${tmpFile}"`;
           } else {
+            // Fallback: strip types with a simple regex and run with node
+            cmd = `"${process.execPath}" --input-type=module --eval "$(cat '${tmpFile}')"`;
             throw new Error("Runtime for typescript is not installed: missing command 'tsx'/'ts-node' or 'npx'");
           }
         } else if (language === 'python') {
