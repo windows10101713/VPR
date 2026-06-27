@@ -4265,7 +4265,8 @@ function initEditorPage() {
     // Fallback: execute real local shell command through backend
     appendTerminalLine("shell command executing...");
     try {
-      const response = await fetch("http://127.0.0.1:3000/api/terminal/exec", {
+      const terminalBase = _isLocalDev ? "http://127.0.0.1:3000" : window.location.origin;
+      const response = await fetch(`${terminalBase}/api/terminal/exec`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
