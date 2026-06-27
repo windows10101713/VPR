@@ -1489,4 +1489,19 @@ server.listen(PORT, () => {
   cleanupStaleTempArtifacts();
   console.log(`✓ Local Piston running on http://localhost:${PORT}`);
   console.log(`Available languages: ${Object.keys(languages).join(', ')}`);
+  // Bootstrap pip on Linux if missing (Azure Node.js container lacks pip)
+  if (process.platform !== 'win32') {
+    try {
+      execSync('python3 -m pip --version', { stdio: 'ignore' });
+    } catch {
+      console.log('[startup] pip not found — bootstrapping via ensurepip...');
+      try {
+        execSync('python3 -m ensurepip --upgrade', { stdio: 'inherit' });
+        execSync('python3 -m pip install --upgrade pip', { stdio: 'inherit' });
+        console.log('[startup] pip installed successfully');
+      } catch (e) {
+        console.warn('[startup] pip bootstrap failed:', e.message);
+      }
+    }
+  }
 });
